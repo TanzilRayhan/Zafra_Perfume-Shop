@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 
 @Controller('manager')
@@ -13,5 +13,15 @@ export class ManagerController {
   @Get('/:id')
   getManagerById(@Param('id') id: string): string {
     return this.managerService.getManagerById(id);
+  }
+
+  @Get('photo/:id')
+  getPhoto(@Param('id') photoId: string): string {
+    return this.managerService.getPhotoService(photoId);
+  }
+
+  @Post('pic')
+  createPhoto(): string {
+    return this.managerService.createPhoto();
   }
 }

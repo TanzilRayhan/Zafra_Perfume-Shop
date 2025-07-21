@@ -13,4 +13,12 @@ export class ManagerService {
   createManager(): string {
     return 'Create manager';
   }
+
+    getPhotoService(photoId: string): string {
+        return `Manager photo for ID: ${photoId}`;
+    }
+
+    createPhoto(): string {
+        return 'Manager photo created';
+    }
 }

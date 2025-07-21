@@ -1,4 +1,4 @@
-import{Controller, Get, Param} from '@nestjs/common';
+import{Controller, Get, Param, Post} from '@nestjs/common';
 import { CustomerService } from "./customer.service";
 @Controller( 'customer')
 export class CustomerController {
@@ -11,6 +11,16 @@ export class CustomerController {
     @Get(':id')
     getCustomerById(@Param('id') id: string): string {
         return this.customerService.getCustomerById(id);
+    }
+
+    @Get('photo/:id')
+    getPhoto(@Param('id') photoId: string): string {
+        return this.customerService.getPhotoService(photoId);
+    }
+
+    @Post('pic')
+    createPhoto(): string {
+        return this.customerService.createPhoto();
     }
 
 }

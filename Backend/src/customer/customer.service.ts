@@ -8,4 +8,12 @@ export class CustomerService {
     getCustomerById(id: string): string {
         return `Customer data for ID: ${id}`;
     }
+
+    getPhotoService(photoId: string): string {
+        return `Customer photo for ID: ${photoId}`;
+    }
+
+    createPhoto(): string {
+        return 'Customer photo created';
+    }
 }

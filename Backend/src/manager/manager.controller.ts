@@ -1,9 +1,13 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
 import { ManagerService } from './manager.service';
+import { CreateManagerDto } from './manager.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MulterError, diskStorage } from "multer";
+
 
 @Controller('manager')
 export class ManagerController {
-  constructor(private readonly managerService: ManagerService) {}
+  constructor(private readonly managerService: ManagerService) { }
 
   @Get()
   getManager(): string {
@@ -11,17 +15,50 @@ export class ManagerController {
   }
 
   @Get('/:id')
-  getManagerById(@Param('id') id: string): string {
+  getManagerById(@Param('id', ParseIntPipe) id: number): string {
     return this.managerService.getManagerById(id);
   }
 
-  @Get('photo/:id')
-  getPhoto(@Param('id') photoId: string): string {
-    return this.managerService.getPhotoService(photoId);
+
+  @Post('add')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  createManager(@Body() data: CreateManagerDto): string {
+    return this.managerService.createManager(data);
   }
 
-  @Post('pic')
-  createPhoto(): string {
-    return this.managerService.createPhoto();
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file',
+    {
+      fileFilter: (req, file, cb) => {
+        if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
+          cb(null, true);
+        else {
+          cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
+        }
+      },
+      limits: { fileSize: 30000 },
+      storage: diskStorage({
+        destination: './uploads',
+        filename: function (req, file, cb) {
+          cb(null, Date.now() + file.originalname)
+        },
+      })
+    }))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      return { message: 'No file uploaded or file rejected.' };
+    }
+    const fileUrl = `/uploads/${file.filename}`;
+    return {
+      message: 'File uploaded successfully',
+      file,
+      url: fileUrl
+    };
   }
+
+  @Get('/getimage/:name')
+  getImages(@Param('name') name, @Res() res) {
+    res.sendFile(name, { root: './uploads' });
+  }
+
 }

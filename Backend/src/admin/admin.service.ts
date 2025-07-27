@@ -1,16 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AdminService {
-  getAdmin(): string {
-    return 'Admin service is running successfully.';
-  }
-  
-  getAdminById(id: string): string {
-    return 'Get admin by id: ' + id;
-  }
-  
-  createAdmin(): string {
-    return 'Create admin';
+  createAdmin(data: any) {
+    console.log('Admin created:', data);
+    return {
+      message: 'Admin user created successfully',
+      data,
+    };
   }
 }

@@ -46,7 +46,7 @@ export class ManagerController {
     }))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      return { message: 'No file uploaded or file rejected.' };
+      return { message: 'No file uploaded or the file rejected.' };
     }
     const fileUrl = `/uploads/${file.filename}`;
     return {

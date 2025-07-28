@@ -21,7 +21,7 @@ export class ManagerController {
 
 
   @Post('add')
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @UsePipes(new ValidationPipe())
   createManager(@Body() data: CreateManagerDto): string {
     return this.managerService.createManager(data);
   }

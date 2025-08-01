@@ -1,9 +1,11 @@
-import {Controller, Post, UploadedFile, UseInterceptors, UsePipes, ValidationPipe, Body, BadRequestException} from '@nestjs/common';
+import {Controller, Post, UploadedFile, UseInterceptors, UsePipes, ValidationPipe, Body, BadRequestException, Get, Param, Res} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { CreateUserDto } from './admin.dto';
 import { AdminService } from './admin.service';
 import { MulterError } from 'multer';
+import { join } from 'path';
+import { Response } from 'express';
 
 @Controller('admin')
 export class AdminController {
@@ -45,6 +47,13 @@ export class AdminController {
     return this.adminService.createAdmin({
       ...body,
       nidImage,
+    });
+  }
+  @Get("getImage/:name")
+  getImage(@Param('name') name: string,
+  @Res() res: Response) {
+    res.sendFile(name, {
+      root: join(__dirname, '../../uploads'),
     });
   }
 }

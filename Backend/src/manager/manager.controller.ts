@@ -1,4 +1,5 @@
-import {Body,Controller,Get,Param,ParseIntPipe,Post,Delete,Query,UsePipes,ValidationPipe,UseInterceptors,UploadedFile,Res, NotFoundException,
+import {
+  Body, Controller, Get, Param, ParseIntPipe, Post, Delete, Query, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, NotFoundException,
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './manager.dto';
@@ -8,7 +9,7 @@ import { MulterError, diskStorage } from 'multer';
 
 @Controller('manager')
 export class ManagerController {
-  constructor(private readonly managerService: ManagerService) {}
+  constructor(private readonly managerService: ManagerService) { }
 
   @Get()
   getManager(): string {
@@ -64,34 +65,30 @@ export class ManagerController {
 
   @Get('/search/fullname')
   async getByFullName(@Query('q') q: string) {
-    const manager= await this.managerService.findByFullNameSubstring(q);
-     if (!manager) {
-    throw new NotFoundException('Manager not found');
+    const manager = await this.managerService.findByFullNameSubstring(q);
+    if (!manager) {
+      throw new NotFoundException('Manager not found');
+    }
+
+    return manager;
   }
 
-  return manager;
+
+  @Get('/search/managername')
+  async getByManagerName(@Query('managername') managername: string) {
+    const manager = await this.managerService.findByManagerName(managername);
+
+    if (!manager) {
+      throw new NotFoundException('Manager not found');
+    }
+
+    return manager;
   }
-
- 
-@Get('/search/managername')
-async getByManagerName(@Query('managername') managername: string) {
-  const manager = await this.managerService.findByManagerName(managername);
-
-  if (!manager) {
-    throw new NotFoundException('Manager not found');
-  }
-
-  return manager;
-}
 
 
   @Delete('/remove/:managername')
   async removeByManagerName(@Param('managername') managername: string) {
-    const manager = await this.managerService.removeByManagerName(managername);
-     if (!manager) {
-    throw new NotFoundException('Manager not found');
-  }
-
-  return manager;
+    return await this.managerService.removeByManagerName(managername);
+ 
   }
 }

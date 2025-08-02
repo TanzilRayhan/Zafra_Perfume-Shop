@@ -1,12 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
-@Entity("admin")
-export class AdminEntity{
-@PrimaryGeneratedColumn()
-id: number;
-@Column()
-name: string;
-@Column()
-email: string;
-@Column()
-password: string;
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity('manager')
+export class ManagerEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ length: 100, unique: true })
+  managername: string;
+
+  @Column({ length: 150 })
+  fullName: string;
+
+  @Column({ default: false })
+  isActive: boolean;
 }

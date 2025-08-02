@@ -1,5 +1,5 @@
-import {IsEmail,IsIn,IsNotEmpty,IsNumberString, Matches,MinLength,IsString,} from 'class-validator';
-
+import {IsEmail,IsIn,IsNotEmpty,IsNumberString,Matches,MinLength,IsString,IsBoolean,IsOptional,Length, MaxLength,
+} from 'class-validator';
 
 export class CreateManagerDto {
   @IsNotEmpty()
@@ -28,6 +28,20 @@ export class CreateManagerDto {
   })
   gender: string;
 
-  @IsNumberString({}, { message: 'Phone number must contain only numbers' })
+  @IsNumberString({}, { message: ' invalid phone number' })
   phone: string;
+
+
+}
+
+export class CreatManagerDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  managername: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(150)
+  fullName: string;
 }

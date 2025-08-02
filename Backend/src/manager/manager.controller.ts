@@ -1,34 +1,34 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import {Body,Controller,Get,Param,ParseIntPipe,Post,Delete,Query,UsePipes,ValidationPipe,UseInterceptors,UploadedFile,Res, NotFoundException,
+} from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import { CreateManagerDto } from './manager.dto';
+import { CreatManagerDto } from './manager.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MulterError, diskStorage } from "multer";
-
+import { MulterError, diskStorage } from 'multer';
 
 @Controller('manager')
 export class ManagerController {
-  constructor(private readonly managerService: ManagerService) { }
+  constructor(private readonly managerService: ManagerService) {}
 
   @Get()
   getManager(): string {
     return this.managerService.getManager();
   }
 
-  @Get('/:id')
+  @Get('/id/:id')
   getManagerById(@Param('id', ParseIntPipe) id: number): string {
     return this.managerService.getManagerById(id);
   }
 
-
   @Post('add')
   @UsePipes(new ValidationPipe())
-  createManager(@Body() data: CreateManagerDto): string {
-    return this.managerService.createManager(data);
+  async createManager(@Body() data: CreatManagerDto) {
+    return await this.managerService.createManager(data);
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file',
-    {
+  @UseInterceptors(
+    FileInterceptor('file', {
       fileFilter: (req, file, cb) => {
         if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
           cb(null, true);
@@ -39,11 +39,12 @@ export class ManagerController {
       limits: { fileSize: 30000 },
       storage: diskStorage({
         destination: './uploads',
-        filename: function (req, file, cb) {
-          cb(null, Date.now() + file.originalname)
+        filename: (req, file, cb) => {
+          cb(null, Date.now() + file.originalname);
         },
-      })
-    }))
+      }),
+    }),
+  )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       return { message: 'No file uploaded or the file rejected.' };
@@ -52,7 +53,7 @@ export class ManagerController {
     return {
       message: 'File uploaded successfully',
       file,
-      url: fileUrl
+      url: fileUrl,
     };
   }
 
@@ -61,4 +62,36 @@ export class ManagerController {
     res.sendFile(name, { root: './uploads' });
   }
 
+  @Get('/search/fullname')
+  async getByFullName(@Query('q') q: string) {
+    const manager= await this.managerService.findByFullNameSubstring(q);
+     if (!manager) {
+    throw new NotFoundException('Manager not found');
+  }
+
+  return manager;
+  }
+
+ 
+@Get('/search/managername')
+async getByManagerName(@Query('managername') managername: string) {
+  const manager = await this.managerService.findByManagerName(managername);
+
+  if (!manager) {
+    throw new NotFoundException('Manager not found');
+  }
+
+  return manager;
+}
+
+
+  @Delete('/remove/:managername')
+  async removeByManagerName(@Param('managername') managername: string) {
+    const manager = await this.managerService.removeByManagerName(managername);
+     if (!manager) {
+    throw new NotFoundException('Manager not found');
+  }
+
+  return manager;
+  }
 }

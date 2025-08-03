@@ -1,37 +1,13 @@
-import { Controller, Get, Param, Post, Body, ValidationPipe, BadRequestException, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, ValidationPipe, BadRequestException, UploadedFile, UseInterceptors, Patch, Delete } from '@nestjs/common';
 import { CustomerService } from "./customer.service";
 import { CustomerDTO } from './customer.DTO';
 import { diskStorage, MulterError } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
+import { Customer } from './customer.entity';
 @Controller('customer')
 export class CustomerController {
     constructor(private readonly customerService: CustomerService) { }
-
-    @Get()
-    getCustomer(): string {
-        return this.customerService.getCustomer();
-    }
-    @Get(':id')
-    getCustomerById(@Param('id') id: string): string {
-        return this.customerService.getCustomerById(id);
-    }
-
-    @Get('photo/:id')
-    getPhoto(@Param('id') photoId: string): string {
-        return this.customerService.getPhotoService(photoId);
-    }
-
-    @Post('pic')
-    createPhoto(): string {
-        return this.customerService.createPhoto();
-    }
-
-    //Lab Task 2
-    @Post("create")
-    createCustomer(@Body(new ValidationPipe()) customer: CustomerDTO): string {
-        return this.customerService.createCustomer(customer);
-    }
 
     @Post('upload')
     @UseInterceptors(
@@ -61,5 +37,30 @@ export class CustomerController {
         console.log(file);
     }
 
+    //Lab Task 3
+    @Get()
+    getAllCustomers(): Promise<Customer[]> {
+        return this.customerService.getAllCustomers();
+    }
+
+    @Post("create")
+     createCustomer(@Body() customer:CustomerDTO ): Promise<Customer> {
+        return this.customerService.createCustomer(customer);
+    }
+
+   @Patch('update/:id')
+   updateCustomer(@Param('id') id: string, @Body() customer: CustomerDTO): Promise<Customer> {
+    return this.customerService.updateCustomer(id, customer);
+   }
+   
+   @Get("nullName")
+   getNullNameCustomers(): Promise<Customer[]> {
+    return this.customerService.getNullNameCustomers();
+   }
+   
+   @Delete('delete/:id')
+   deleteCustomer(@Param('id') id: string): Promise<{message: string}> {
+    return this.customerService.deleteCustomer(id);
+   }
 
 }

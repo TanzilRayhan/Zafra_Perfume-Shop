@@ -1,27 +1,28 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ManagerModule } from './manager/manager.module';
-import { AdminModule } from './admin/admin.module';
-import { CustomerModule } from './customer/customer.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './admin/user.module';
+import { AdminModule } from './admin/admin.module';
 
+// Import all your entity classes for the global config
+import { User } from './admin/entities/user.entity';
+import { Product } from './admin/entities/product.entity';
+import { Order } from './admin/entities/order.entity';
+import { Review } from './admin/entities/review.entity';
 
 @Module({
-  imports: [ManagerModule, AdminModule , CustomerModule, UserModule,
-    TypeOrmModule.forRoot(
-    { type: 'postgres',
-    host: 'localhost',
-    port: 5432,
-    username: 'postgres',
-    password: 'admin',
-    database: 'Backend',
-    autoLoadEntities: true,
-    synchronize: true,
-} ),
+  imports: [
+    // Configure the database connection globally
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',         // Your PostgreSQL username
+      password: 'admin',    // Your PostgreSQL password
+      database: 'zafra',         // Your database name
+      entities: [User, Product, Order, Review],
+      synchronize: true,            // Automatically creates DB tables
+    }),
+    // Import the single, consolidated AdminModule
+    AdminModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

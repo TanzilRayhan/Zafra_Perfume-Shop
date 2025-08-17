@@ -1,59 +1,106 @@
-import {Controller, Post, UploadedFile, UseInterceptors, UsePipes, ValidationPipe, Body, BadRequestException, Get, Param, Res} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { CreateUserDto } from './admin.dto';
-import { AdminService } from './admin.service';
-import { MulterError } from 'multer';
-import { join } from 'path';
-import { Response } from 'express';
+import { Controller, Get, Post, Body, Put, Patch, Param, Delete, UseGuards, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
+import { ProductsService } from './services/products.service';
+import { UsersService } from './services/users.service';
+import { OrdersService } from './services/orders.service';
+import { ReviewsService } from './services/reviews.service';
+import { MailerService } from './mailer/mailer.service';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { Roles } from './common/decorators/roles.decorator';
+import { Role } from './common/enums/user-role.enum';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard) // Requirement: Use Guards to protect all routes
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly usersService: UsersService,
+    private readonly ordersService: OrdersService,
+    private readonly reviewsService: ReviewsService,
+    private readonly mailerService: MailerService,
+  ) {}
 
-  @Post('create')
-  @UseInterceptors(
-    FileInterceptor('nidImage', {
-      fileFilter: (req, file, cb) => {
-        if (file.originalname.match(/\.(jpg|jpeg|png|webp)$/)) {
-          cb(null, true);
-        } else {
-          cb(
-            new MulterError('LIMIT_UNEXPECTED_FILE', 'nidImage'),
-            false,
-          );
-        }
-      },
-      limits: {
-        fileSize: 2 * 1024 * 1024,
-      },
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          cb(null, Date.now() + '-' + file.originalname);
-        },
-      }),
-    }),
-  )
-  @UsePipes(new ValidationPipe())
-  async createAdmin(
-    @UploadedFile() nidImage: Express.Multer.File,
-    @Body() body: CreateUserDto,
-  ) {
-    if (!nidImage) {
-      throw new BadRequestException('NID image is required and must be ≤ 2MB');
-    }
-
-    return this.adminService.createAdmin({
-      ...body,
-      nidImage,
-    });
+  // Route 1: Add new perfume [POST]
+  @Post('product')
+  @Roles(Role.Admin)
+  createProduct(@Body() createProductDto: CreateProductDto) {
+    return this.productsService.create(createProductDto);
   }
-  @Get("getImage/:name")
-  getImage(@Param('name') name: string,
-  @Res() res: Response) {
-    res.sendFile(name, {
-      root: join(__dirname, '../../uploads'),
-    });
+
+  // Route 2: Update perfume details [PUT]
+  @Put('product/:id')
+  @Roles(Role.Admin)
+  updateProduct(
+    @Param('id', ParseIntPipe) id: number, // Requirement: Use Pipes
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    this.mailerService.sendStockUpdateNotification('customer@example.com', 'A Perfume');
+    return this.productsService.update(id, updateProductDto);
+  }
+
+  // Route 3: Delete perfume [DELETE]
+  @Delete('product/:id')
+  @Roles(Role.Admin)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.productsService.remove(id);
+  }
+
+  // Route 4: Get all perfumes [GET]
+  @Get('products')
+  @Roles(Role.Admin)
+  findAllProducts() {
+    return this.productsService.findAll();
+  }
+
+  // Route 5: List all users [GET]
+  @Get('users')
+  @Roles(Role.Admin)
+  findAllUsers() {
+    return this.usersService.findAll();
+  }
+
+  // Route 6: Change user role [PATCH]
+  @Patch('user/:id/role')
+  @Roles(Role.Admin)
+  updateUserRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserRoleDto: UpdateUserRoleDto,
+  ) {
+    return this.usersService.updateRole(id, updateUserRoleDto.role as Role);
+  }
+
+  // Route 7: View all orders [GET]
+  @Get('orders')
+  @Roles(Role.Admin)
+  findAllOrders() {
+    return this.ordersService.findAll();
+  }
+  
+  // --- Routes for Relationship CRUD Requirement ---
+
+  // Route 8: Get all reviews [GET]
+  @Get('reviews')
+  @Roles(Role.Admin)
+  findAllReviews() {
+    return this.reviewsService.findAll();
+  }
+  
+  // Route 9: Get a single review by ID [GET]
+  @Get('review/:id')
+  @Roles(Role.Admin)
+  findOneReview(@Param('id', ParseIntPipe) id: number) {
+    return this.reviewsService.findOne(id);
+  }
+
+  // Route 10: Remove inappropriate review [DELETE]
+  @Delete('review/:id')
+  @Roles(Role.Admin)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeReview(@Param('id', ParseIntPipe) id: number) {
+    return this.reviewsService.remove(id);
   }
 }

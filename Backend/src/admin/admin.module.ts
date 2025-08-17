@@ -28,24 +28,24 @@ import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
-    // Requirement: TypeORM Database Operations
+  
     TypeOrmModule.forFeature([User, Product, Order, Review]),
     
-    // Requirement: JWT
+
     PassportModule,
     JwtModule.register({
-      secret: 'secret-key', // Use the same secret as in the strategy
+      secret: 'secret-key', 
       signOptions: { expiresIn: '60m' },
     }),
 
-    // Bonus Requirement: Mailer
+
     NestMailerModule.forRoot({
       transport: {
         host: 'smtp.gmail.com',
         secure: true,
         auth: {
-          user: 'your-email@gmail.com', // Your Gmail address
-          pass: 'your-gmail-app-password', // A Google App Password
+          user: 'your-email@gmail.com', 
+          pass: 'your-gmail-app-password',
         },
       },
     }),

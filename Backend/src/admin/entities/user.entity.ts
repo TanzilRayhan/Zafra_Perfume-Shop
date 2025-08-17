@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeInsert } from 
 import { Order } from './order.entity';
 import { Review } from './review.entity';
 import { Role } from '../common/enums/user-role.enum';
-import * as bcrypt from 'bcrypt'; // Requirement: BCrypt
+import * as bcrypt from 'bcrypt'; 
 
 @Entity('users')
 export class User {
@@ -21,7 +21,6 @@ export class User {
   @Column({ type: 'enum', enum: Role, default: Role.Customer })
   role: Role;
 
-  // Requirement: One-to-Many Relationship
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
 

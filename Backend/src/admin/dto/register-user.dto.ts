@@ -11,6 +11,6 @@ export class RegisterUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' }) // Validates the minimum length of the password string [cite: 1532]
+  @MinLength(8, { message: 'Password must be at least 8 characters long' }) 
   password: string;
 }

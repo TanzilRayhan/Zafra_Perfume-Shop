@@ -9,13 +9,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'secret-key', // Must be the same secret as in the module
+      secretOrKey: 'secret-key',
     });
   }
 
   async validate(payload: any) {
-    // The payload is the decoded JWT. We can use its data.
-    // NestJS will attach the returned object to request.user
     return { userId: payload.sub, email: payload.email, role: payload.role };
   }
 }

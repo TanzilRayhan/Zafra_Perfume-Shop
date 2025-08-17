@@ -13,7 +13,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @Controller('admin')
-@UseGuards(JwtAuthGuard, RolesGuard) // Requirement: Use Guards to protect all routes
+@UseGuards(JwtAuthGuard, RolesGuard) 
 export class AdminController {
   constructor(
     private readonly productsService: ProductsService,
@@ -34,7 +34,7 @@ export class AdminController {
   @Put('product/:id')
   @Roles(Role.Admin)
   updateProduct(
-    @Param('id', ParseIntPipe) id: number, // Requirement: Use Pipes
+    @Param('id', ParseIntPipe) id: number, 
     @Body() updateProductDto: UpdateProductDto,
   ) {
     this.mailerService.sendStockUpdateNotification('customer@example.com', 'A Perfume');
@@ -80,8 +80,6 @@ export class AdminController {
     return this.ordersService.findAll();
   }
   
-  // --- Routes for Relationship CRUD Requirement ---
-
   // Route 8: Get all reviews [GET]
   @Get('reviews')
   @Roles(Role.Admin)

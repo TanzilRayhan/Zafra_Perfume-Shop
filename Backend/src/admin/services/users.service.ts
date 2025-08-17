@@ -29,7 +29,7 @@ export class UsersService {
   async updateRole(id: number, role: Role): Promise<User> {
     const user = await this.usersRepository.findOneBy({ id });
     if (!user) {
-      // Requirement: HttpException
+
       throw new NotFoundException(`User with ID ${id} not found`);
     }
     user.role = role;

@@ -1,7 +1,7 @@
 import { IsString, IsNumber, Min, IsOptional } from 'class-validator';
 
 export class UpdateProductDto {
-  @IsOptional() // Marks the property as optional; it doesn't need to be provided
+  @IsOptional() 
   @IsString()
   name?: string;
 
@@ -11,7 +11,7 @@ export class UpdateProductDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(0) // Ensures the number is not negative
+  @Min(0) 
   price?: number;
 
   @IsOptional()

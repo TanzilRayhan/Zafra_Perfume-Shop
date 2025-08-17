@@ -1,9 +1,6 @@
 import { IsBoolean, IsIn, IsNotEmpty, IsNumber, IsString, Matches, MinLength } from 'class-validator';
 
 export class CustomerDTO {
-  @IsNotEmpty()
-  @IsBoolean()
-  isActive: boolean;
 
   @IsString()
   fullName: string;
@@ -11,5 +8,18 @@ export class CustomerDTO {
   @IsNotEmpty()
   @IsNumber()
   phone: number;
+
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  address: string;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string; 
+
 
 }

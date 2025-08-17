@@ -60,8 +60,8 @@ export class CustomerService {
         try {
             await this.mailerService.sendMail({
                 to: customer.email,
-                subject: 'Hello '+customer.fullName,
-                text: 'Welcome to our app. Thank you for signing up.',
+                subject: 'Signup Successfully',
+                text: 'Hello '+customer.fullName+', Thank you for signing up. Welcome to our app.',
             });
             console.log('Welcome email sent successfully to:', customer.email);
         } catch (error) {

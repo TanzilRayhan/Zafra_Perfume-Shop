@@ -9,24 +9,32 @@ import { PerfumeModule } from './perfume/perfume.module';
 import { CartModule } from './cart/cart.module';
 import { CartProductModule } from './cartProduct/cartProduct.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [ManagerModule, AdminModule , CustomerModule,
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ManagerModule, 
+    AdminModule, 
+    CustomerModule,
     PerfumeModule,
     CartModule,
     CartProductModule, 
     AuthModule,
     TypeOrmModule.forRoot({
-    type: 'postgres',
-    host: 'localhost',
-    port: 5432,
-    username: 'postgres',
-    password: '123456',
-    database: 'zafra',
-    autoLoadEntities: true,
-    synchronize: true,
-    logging: true,
-  })],
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'postgres',
+      password: '123456',
+      database: 'zafra',
+      autoLoadEntities: true,
+      synchronize: true,
+      logging: true,
+    })
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

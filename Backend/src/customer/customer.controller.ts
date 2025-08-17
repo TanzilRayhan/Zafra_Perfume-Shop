@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, ValidationPipe, BadRequestException, UploadedFile, UseInterceptors, Patch, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, ValidationPipe, BadRequestException, UploadedFile, UseInterceptors, Patch, Delete, Query, UseGuards } from '@nestjs/common';
 import { CustomerService } from "./customer.service";
 import { CustomerDTO } from './dto/customer.DTO';
 import { diskStorage, MulterError } from 'multer';
@@ -7,6 +7,7 @@ import * as path from 'path';
 import { Customer } from './customer.entity';
 import { Cart } from 'src/cart/cart.entity';
 import { CartDto } from 'src/cart/dto/cart.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('customer')
 export class CustomerController {
@@ -18,6 +19,7 @@ export class CustomerController {
     }
 
     @Post('update-customer')
+    @UseGuards(AuthGuard)
     async updateCustomer(@Body() data: { customerID: string, fullName?: string, phone?: number, email?: string, address?: string }): Promise<Customer> {
         return this.customerService.updateCustomer(data.customerID, {
             fullName: data.fullName,
@@ -27,37 +29,44 @@ export class CustomerController {
         });
     }
     @Post('get-customer')
+    @UseGuards(AuthGuard)
     async getCustomer(@Body() data: {customerId: string}): Promise<Customer> {
         return this.customerService.getCustomer(data.customerId);
     }
     @Post('add-to-cart')
+    @UseGuards(AuthGuard)
     async addToCart(@Body() cart: CartDto): Promise<Cart> {
         return this.customerService.addToCart(cart);
     }
    
     @Post('get-all-carts')
+    @UseGuards(AuthGuard)
     async getAllcartsByCustomerId(@Body() data: {customerId: string}): Promise<any> {
         console.log("customerId", data.customerId);
         return this.customerService.getAllcartsByCustomerId(data.customerId);
     }
 
     @Post('create-order')
+    @UseGuards(AuthGuard)
     async createOrder(@Body() data: {customerId: string, cartId: string}): Promise<any> {
         console.log("customerId", data.customerId); 
         console.log("cartId", data.cartId); 
         return this.customerService.createOrder(data.customerId, data.cartId);
     }
    @Post('get-all-pending-orders')
+   @UseGuards(AuthGuard)
    async getAllPendingOrders(@Body() data: {customerId: string}): Promise<any> {
     console.log("customerId", data.customerId);
     return this.customerService.getAllPendingOrders(data.customerId);
    }
    @Post('get-all-delivered-orders')
+   @UseGuards(AuthGuard)
    async getAllDeliveredOrders(@Body() data: {customerId: string}): Promise<any> {
     console.log("customerId", data.customerId);
     return this.customerService.getAllDeliveredOrders(data.customerId);
    }
    @Delete('delete-cart')
+   @UseGuards(AuthGuard)
    async deleteCart(@Body() data: {cartId: string}): Promise<any> {
     console.log("data", data);
     console.log("cartId", data.cartId);

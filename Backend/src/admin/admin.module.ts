@@ -44,8 +44,8 @@ import { JwtStrategy } from './auth/jwt.strategy';
         host: 'smtp.gmail.com',
         secure: true,
         auth: {
-          user: 'your-email@gmail.com', 
-          pass: 'your-gmail-app-password',
+          user: 'tanzilrayhan169@gmail.com', 
+          pass: '',
         },
       },
     }),

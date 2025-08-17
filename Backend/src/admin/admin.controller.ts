@@ -33,13 +33,23 @@ export class AdminController {
   // Route 2: Update perfume details [PUT]
   @Put('product/:id')
   @Roles(Role.Admin)
-  updateProduct(
+
+  async updateProduct(
     @Param('id', ParseIntPipe) id: number, 
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    this.mailerService.sendStockUpdateNotification('customer@example.com', 'A Perfume');
-    return this.productsService.update(id, updateProductDto);
+
+    const updatedProduct = await this.productsService.update(id, updateProductDto);
+
+    this.mailerService.sendStockUpdateNotification(
+      'tanzilrayhan169@gmail.com', 
+      updatedProduct.name, 
+    );
+    
+    return updatedProduct;
   }
+
+  
 
   // Route 3: Delete perfume [DELETE]
   @Delete('product/:id')
@@ -73,28 +83,37 @@ export class AdminController {
     return this.usersService.updateRole(id, updateUserRoleDto.role as Role);
   }
 
-  // Route 7: View all orders [GET]
+  // Route 7: Delete perfume [DELETE]
+  @Delete('user/:id')
+  @Roles(Role.Admin)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeUser(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.remove(id);
+  }
+
+
+  // Route 8: View all orders [GET]
   @Get('orders')
   @Roles(Role.Admin)
   findAllOrders() {
     return this.ordersService.findAll();
   }
   
-  // Route 8: Get all reviews [GET]
+  // Route 9: Get all reviews [GET]
   @Get('reviews')
   @Roles(Role.Admin)
   findAllReviews() {
     return this.reviewsService.findAll();
   }
   
-  // Route 9: Get a single review by ID [GET]
+  // Route 10: Get a single review by ID [GET]
   @Get('review/:id')
   @Roles(Role.Admin)
   findOneReview(@Param('id', ParseIntPipe) id: number) {
     return this.reviewsService.findOne(id);
   }
 
-  // Route 10: Remove inappropriate review [DELETE]
+  // Route 11: Remove review [DELETE]
   @Delete('review/:id')
   @Roles(Role.Admin)
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -9,7 +9,10 @@ export class MailerService {
     await this.mailerService.sendMail({
       to: userEmail,
       subject: `Stock Update for ${productName}`,
-      text: `Good news! ${productName} is back in stock.`,
+      text: `Good news!
+${productName} is back in stock.
+      
+- Zafra Perfume Shop`,
     });
     console.log(`Email sent for ${productName} stock update.`);
   }

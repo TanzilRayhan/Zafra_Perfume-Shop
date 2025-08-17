@@ -35,4 +35,11 @@ export class UsersService {
     user.role = role;
     return this.usersRepository.save(user);
   }
+
+    async remove(id: number): Promise<void> {
+    const result = await this.usersRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  }
 }

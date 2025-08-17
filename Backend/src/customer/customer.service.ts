@@ -6,8 +6,7 @@ import { Customer } from "./customer.entity";
 import { Cart } from "src/cart/cart.entity";
 import { CartService } from "src/cart/cart.service";
 import { CartDto } from "src/cart/dto/cart.dto";
-import { CartProduct } from "src/cartProduct/cartProduct.entity";
-import { CustomerUpdateDTO } from "./dto/customerUpdate.dto";
+import { MailerService } from '@nestjs-modules/mailer';
 
 export class PerfumeDetails {
     perfumeName: string;
@@ -51,10 +50,24 @@ export class CustomerService {
         private customerRepository: Repository<Customer>,
         @Inject(forwardRef(() => CartService))
         private cartService: CartService,
+        private mailerService: MailerService
     ) {}
    
     async createCustomer(customer: CustomerDTO): Promise<Customer> {
         const newCustomer = this.customerRepository.create(customer);
+        
+        // Temporarily disable email sending until SMTP is configured
+        try {
+            await this.mailerService.sendMail({
+                to: customer.email,
+                subject: 'Hello '+customer.fullName,
+                text: 'Welcome to our app. Thank you for signing up.',
+            });
+            console.log('Welcome email sent successfully to:', customer.email);
+        } catch (error) {
+            console.log('Email sending failed, but customer creation continues:', error.message);
+        }
+        
         return this.customerRepository.save(newCustomer);
     }
 

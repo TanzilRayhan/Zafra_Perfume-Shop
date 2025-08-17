@@ -7,8 +7,7 @@ import * as path from 'path';
 import { Customer } from './customer.entity';
 import { Cart } from 'src/cart/cart.entity';
 import { CartDto } from 'src/cart/dto/cart.dto';
-import { CartProduct } from 'src/cartProduct/cartProduct.entity';
-import { CustomerUpdateDTO } from './dto/customerUpdate.dto';
+
 @Controller('customer')
 export class CustomerController {
     constructor(private readonly customerService: CustomerService) { }

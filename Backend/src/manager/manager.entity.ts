@@ -1,4 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { ProductEntity } from './product/product.entity';
+import { OrderEntity } from './order/order.entity';
+
+
 
 @Entity('manager')
 export class ManagerEntity {
@@ -13,4 +17,13 @@ export class ManagerEntity {
 
   @Column({ default: false })
   isActive: boolean;
+
+  @Column({ length: 150, default: '123456' })
+  password: string;
+
+  @OneToMany(() => ProductEntity, (product) => product.manager)
+  products: ProductEntity[];
+
+  @OneToMany(() => OrderEntity, (order) => order.manager)
+  orders: OrderEntity[];
 }

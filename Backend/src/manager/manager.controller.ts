@@ -1,94 +1,100 @@
 import {
-  Body, Controller, Get, Param, ParseIntPipe, Post, Delete, Query, UsePipes, ValidationPipe, UseInterceptors, UploadedFile, Res, NotFoundException,
+  Body, Controller, Get, Param, ParseUUIDPipe, Post, Delete,
+  Query, UsePipes, ValidationPipe, Patch, Put, UseGuards, Session,
+  HttpException,
+  HttpStatus
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
-import { CreateManagerDto } from './manager.dto';
-import { CreatManagerDto } from './manager.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { MulterError, diskStorage } from 'multer';
+import { CreateManagerDto, SearchManagerDto } from './manager.dto';
+import { CreateProductDto, UpdateProductDto, UpdateOrderStatusDto } from './product/product.dto';
+import { SessionGuard } from './auth/session.guard';
 
 @Controller('manager')
 export class ManagerController {
   constructor(private readonly managerService: ManagerService) { }
 
-  @Get()
-  getManager(): string {
-    return this.managerService.getManager();
-  }
-
-  @Get('/id/:id')
-  getManagerById(@Param('id', ParseIntPipe) id: number): string {
-    return this.managerService.getManagerById(id);
-  }
-
+  // Create Manager
   @Post('add')
   @UsePipes(new ValidationPipe())
-  async createManager(@Body() data: CreatManagerDto) {
-    return await this.managerService.createManager(data);
+  createManager(@Body() dto: CreateManagerDto) {
+    return this.managerService.createManager(dto);
   }
 
-  @Post('upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      fileFilter: (req, file, cb) => {
-        if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
-          cb(null, true);
-        else {
-          cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-        }
+  // Get All Managers
+  @Get('all')
+  getManagers() {
+    return this.managerService.getManagers();
+  }
+
+  // Search Manager by name
+  @Get('search')
+  @UsePipes(new ValidationPipe({ whitelist: true })) 
+  getByManagerName(@Query() query: SearchManagerDto) {
+    return this.managerService.findByManagerName(query.name);
+  }
+
+  // Delete Manager
+@Delete(':id')
+async removeManager(@Param('id', ParseUUIDPipe) id: string) {
+  try {
+    return await this.managerService.removeManager(id);
+  } catch (error) {
+    throw new HttpException(
+      {
+        status: HttpStatus.NOT_FOUND,
+        error: error.message || 'Failed to delete manager',
       },
-      limits: { fileSize: 30000 },
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          cb(null, Date.now() + file.originalname);
-        },
-      }),
-    }),
-  )
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      return { message: 'No file uploaded or the file rejected.' };
-    }
-    const fileUrl = `/uploads/${file.filename}`;
-    return {
-      message: 'File uploaded successfully',
-      file,
-      url: fileUrl,
-    };
+      HttpStatus.NOT_FOUND,
+    );
+  }
+}
+
+
+  // porduct crud
+
+
+  // Get All Products
+  @Get('products')
+  getAllProducts() {
+    return this.managerService.getAllProducts();
   }
 
-  @Get('/getimage/:name')
-  getImages(@Param('name') name, @Res() res) {
-    res.sendFile(name, { root: './uploads' });
-  }
-
-  @Get('/search/fullname')
-  async getByFullName(@Query('q') q: string) {
-    const manager = await this.managerService.findByFullNameSubstring(q);
-    if (!manager) {
-      throw new NotFoundException('Manager not found');
-    }
-
-    return manager;
+  //  Add product (Only logged-in Manager allowed)
+  @Post('product')
+  @UseGuards(SessionGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true })) 
+  addProduct(
+    @Session() session: Record<string, any>,
+    @Body() dto: CreateProductDto,
+  ) {
+    return this.managerService.addProduct(session.managerId, dto);
   }
 
 
-  @Get('/search/managername')
-  async getByManagerName(@Query('managername') managername: string) {
-    const manager = await this.managerService.findByManagerName(managername);
+  // Update product
+  @Put('product/:id')
+  updateProduct(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto) {
+    return this.managerService.updateProduct(id, dto);
+  }
 
-    if (!manager) {
-      throw new NotFoundException('Manager not found');
-    }
-
-    return manager;
+  // Remove product
+  @Delete('product/:id')
+  removeProduct(@Param('id', ParseUUIDPipe) id: string) {
+    return this.managerService.removeProduct(id);
   }
 
 
-  @Delete('/remove/:managername')
-  async removeByManagerName(@Param('managername') managername: string) {
-    return await this.managerService.removeByManagerName(managername);
- 
+  // Get manager's products
+  @Get(':managerId/products')
+  getProducts(@Param('managerId', ParseUUIDPipe) managerId: string) {
+    return this.managerService.getProducts(managerId);
   }
+
+  // Get All Orders
+  @Get('orders')
+  getAllOrders() {
+    return this.managerService.getAllOrders();
+  }
+
+
 }

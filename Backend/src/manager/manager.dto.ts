@@ -1,40 +1,7 @@
-import {IsEmail,IsIn,IsNotEmpty,IsNumberString,Matches,MinLength,IsString,IsBoolean,IsOptional,Length, MaxLength,
-} from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 
-export class CreateManagerDto {
-  @IsNotEmpty()
-  @IsString()
-  id: string;
-
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsEmail({}, { message: 'Invalid email format' })
-  @Matches(/@aiub\.edu$/, {
-    message: 'Email must be from aiub.edu domain',
-  })
-  email: string;
-
-  @IsNotEmpty()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
-  @Matches(/[A-Z]/, {
-    message: 'Password must contain at least one uppercase letter',
-  })
-  password: string;
-
-  @IsIn(['male', 'female'], {
-    message: 'Gender must be either male or female',
-  })
-  gender: string;
-
-  @IsNumberString({}, { message: ' invalid phone number' })
-  phone: string;
-
-
-}
-
-export class CreatManagerDto {
+// CHANGED: Typo ঠিক—CreatManagerDto → CreateManagerDto
+export class CreateManagerDto { // CHANGED
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
@@ -44,4 +11,18 @@ export class CreatManagerDto {
   @IsNotEmpty()
   @MaxLength(150)
   fullName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  @MinLength(6) // NEW: ন্যূনতম length
+  password: string;
+}
+
+// NEW: search query validation এর জন্য
+export class SearchManagerDto { // NEW
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
 }

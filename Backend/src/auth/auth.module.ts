@@ -10,7 +10,7 @@ import { jwtConstants } from "./config/jwt-secret";
     imports:[JwtModule.register({
         secret:jwtConstants.secret,
         global:true,
-        signOptions:{expiresIn:'1d'},
+        signOptions:{expiresIn:'5h'},
     }),CustomerModule],
     providers:[AuthService,AuthGuard],
     exports:[AuthService,AuthGuard],

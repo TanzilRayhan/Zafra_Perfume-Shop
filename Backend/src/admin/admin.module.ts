@@ -4,7 +4,6 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule as NestMailerModule } from '@nestjs-modules/mailer';
 
-// --- Import all Components ---
 // Controllers
 import { AdminController } from './admin.controller';
 import { AuthController } from './auth/auth.controller';
@@ -35,7 +34,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
     PassportModule,
     JwtModule.register({
       secret: 'secret-key', 
-      signOptions: { expiresIn: '60m' },
+      signOptions: { expiresIn: '300m' },
     }),
 
 
@@ -45,7 +44,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
         secure: true,
         auth: {
           user: 'tanzilrayhan169@gmail.com', 
-          pass: '',
+          pass: 'auub ixkd zoxl uhxk',
         },
       },
     }),

@@ -49,7 +49,6 @@ export class AdminController {
     return updatedProduct;
   }
 
-  
 
   // Route 3: Delete perfume [DELETE]
   @Delete('product/:id')
@@ -72,6 +71,7 @@ export class AdminController {
   findAllUsers() {
     return this.usersService.findAll();
   }
+  
 
   // Route 6: Change user role [PATCH]
   @Patch('user/:id/role')

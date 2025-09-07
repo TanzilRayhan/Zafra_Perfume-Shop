@@ -1,4 +1,4 @@
-import AuthForm from "@/components/ui/authForm";
+import SignupForm from "@/components/ui/signupForm";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa6";
 
@@ -9,7 +9,7 @@ export default function Signup() {
             <FaArrowLeft /> Back to Home
         </Link>
       <div className="flex flex-col items-center justify-center h-screen">
-        <AuthForm type="register" />
+        <SignupForm />
       </div>
     </div>
   )

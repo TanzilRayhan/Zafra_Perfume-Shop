@@ -1,6 +1,4 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
-import { Observable } from "rxjs";
-import * as jwt from 'jsonwebtoken';
 import { JwtService } from "@nestjs/jwt";
 
 @Injectable()

@@ -1,31 +1,24 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ManagerModule } from './manager/manager.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminModule } from './admin/admin.module';
 import { CustomerModule } from './customer/customer.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { PerfumeModule } from './perfume/perfume.module';
 import { CartModule } from './cart/cart.module';
 import { CartProductModule } from './cartProduct/cartProduct.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ManagerModule } from './manager/manager.module';
+import { AppService } from './app.service';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ManagerModule, 
-    AdminModule, 
-    CustomerModule,
-    PerfumeModule,
-    CartModule,
-    CartProductModule, 
-    AuthModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: 'localhost', 
       port: 5432,
       username: 'postgres',
       password: '123456',
@@ -33,9 +26,16 @@ import { ConfigModule } from '@nestjs/config';
       autoLoadEntities: true,
       synchronize: true,
       logging: true,
-    })
+    }),
+    ManagerModule,
+    AdminModule,
+    CustomerModule,
+    PerfumeModule,
+    CartModule,
+    CartProductModule,
+    AuthModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}

@@ -1,9 +1,66 @@
-import { Module } from "@nestjs/common";
-import { AdminController } from "./admin.controller";
-import { AdminService } from "./admin.service";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { MailerModule as NestMailerModule } from '@nestjs-modules/mailer';
+
+// Controllers
+import { AdminController } from './admin.controller';
+import { AuthController } from './auth/auth.controller';
+
+// Services
+import { UsersService } from './services/users.service';
+import { ProductsService } from './services/products.service';
+import { OrdersService } from './services/orders.service';
+import { ReviewsService } from './services/reviews.service';
+import { AuthService } from './auth/auth.service';
+import { MailerService } from './mailer/mailer.service';
+
+// Entities
+import { User } from './entities/user.entity';
+import { Product } from './entities/product.entity';
+import { Order } from './entities/order.entity';
+import { Review } from './entities/review.entity';
+
+// Auth
+import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
-    controllers: [AdminController],
-    providers: [AdminService],
+  imports: [
+  
+    TypeOrmModule.forFeature([User, Product, Order, Review]),
+    
+
+    PassportModule,
+    JwtModule.register({
+      secret: 'secret-key', 
+      signOptions: { expiresIn: '300m' },
+    }),
+
+
+    NestMailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        secure: true,
+        auth: {
+          user: 'tanzilrayhan169@gmail.com', 
+          pass: 'auub ixkd zoxl uhxk',
+        },
+      },
+    }),
+  ],
+  controllers: [
+    AdminController,
+    AuthController
+  ],
+  providers: [
+    UsersService,
+    ProductsService,
+    OrdersService,
+    ReviewsService,
+    AuthService,
+    JwtStrategy,
+    MailerService
+  ],
 })
 export class AdminModule {}

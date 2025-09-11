@@ -5,12 +5,13 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Customer } from "./customer.entity";
 import { Cart } from "../cart/cart.entity";
 import { CartModule } from "src/cart/cart.module";
+import { OrderModule } from "src/order/order.module";
 import { PerfumeModule } from "src/perfume/perfume.module";
 import { MailerModule } from "@nestjs-modules/mailer";
 @Module({
     controllers: [CustomerController],
     providers: [CustomerService],
-    imports: [TypeOrmModule.forFeature([Customer, Cart]), forwardRef(() => CartModule), PerfumeModule,
+    imports: [TypeOrmModule.forFeature([Customer, Cart]), forwardRef(() => CartModule), forwardRef(() => OrderModule), PerfumeModule,
         MailerModule.forRoot({
         transport: {
             host: 'smtp.gmail.com',

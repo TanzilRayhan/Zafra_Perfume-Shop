@@ -9,6 +9,7 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
     @Post('login')
     async login(@Body() loginDto: LoginDto) {
+        console.log("Data received in login controller", loginDto);
         const customer=await this.authService.validateCustomer(loginDto.email,loginDto.password);
         if(!customer){
             throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);

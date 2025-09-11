@@ -48,10 +48,17 @@ export class CustomerController {
 
     @Post('create-order')
     @UseGuards(AuthGuard)
-    async createOrder(@Body() data: {customerId: string, cartId: string}): Promise<any> {
-        console.log("customerId", data.customerId); 
-        console.log("cartId", data.cartId); 
-        return this.customerService.createOrder(data.customerId, data.cartId);
+    async createOrder(@Body() data: {
+        customerId: string, 
+        cartId: string, 
+        shippingAddress?: string
+    }): Promise<any> {
+        console.log("createOrder data", data); 
+        return this.customerService.createOrder(
+            data.customerId, 
+            data.cartId, 
+            data.shippingAddress
+        );
     }
    @Post('get-all-pending-orders')
    @UseGuards(AuthGuard)
@@ -64,6 +71,13 @@ export class CustomerController {
    async getAllDeliveredOrders(@Body() data: {customerId: string}): Promise<any> {
     console.log("customerId", data.customerId);
     return this.customerService.getAllDeliveredOrders(data.customerId);
+   }
+
+   @Post('get-all-orders')
+   @UseGuards(AuthGuard)
+   async getAllOrders(@Body() data: {customerId: string}): Promise<any> {
+    console.log("customerId", data.customerId);
+    return this.customerService.getAllOrders(data.customerId);
    }
    @Delete('delete-cart')
    @UseGuards(AuthGuard)

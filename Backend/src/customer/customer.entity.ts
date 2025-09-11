@@ -2,6 +2,7 @@
 import { Entity, Column, BeforeInsert, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, PrimaryColumn, OneToMany } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Cart } from '../cart/cart.entity';
+import { Order } from '../order/order.entity';
 import * as bcrypt from 'bcrypt';
 
 @Entity("customer")
@@ -23,9 +24,15 @@ export class Customer {
 
     @Column({ type: 'varchar', length: 150, nullable: false })
     password: string;
+
+    @Column({ type: 'varchar', length: 50, default: 'customer' })
+    role: string;
     
     @OneToMany(() => Cart, (cart) => cart.customer)
     cart: Cart[];
+
+    @OneToMany(() => Order, (order) => order.customer)
+    orders: Order[];
 
     @BeforeInsert()
     generateId() {

@@ -1,4 +1,5 @@
 import { CartProduct } from 'src/cartProduct/cartProduct.entity';
+import { OrderProduct } from 'src/orderProduct/orderProduct.entity';
 import { Entity, Column, ManyToOne, BeforeInsert, PrimaryColumn, OneToMany } from 'typeorm';
 import{ v4 as uuidv4 } from 'uuid';
 
@@ -33,6 +34,9 @@ export class Perfume {
   
   @OneToMany(() => CartProduct, (cartProduct) => cartProduct.perfume)
   cartProducts: CartProduct[];
+
+  @OneToMany(() => OrderProduct, (orderProduct) => orderProduct.perfume)
+  orderProducts: OrderProduct[];
 
   @BeforeInsert()
   async generateId() {

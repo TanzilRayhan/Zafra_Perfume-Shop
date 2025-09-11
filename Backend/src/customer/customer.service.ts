@@ -6,6 +6,9 @@ import { Customer } from "./customer.entity";
 import { Cart } from "src/cart/cart.entity";
 import { CartService } from "src/cart/cart.service";
 import { CartDto } from "src/cart/dto/cart.dto";
+import { OrderService } from "src/order/order.service";
+import { Order } from "src/order/order.entity";
+import { CreateOrderFromCartDto } from "src/order/dto/order.dto";
 import { MailerService } from '@nestjs-modules/mailer';
 
 export class PerfumeDetails {
@@ -36,9 +39,10 @@ export class OrderDetails {
     orderTotal: number;
     paymentStatus: string;
     orderStatus: string;
+    deliveryStatus: boolean;
     customerName: string;
     customerEmail: string;
-    customerPhone: number;
+    customerPhone: string;
     customerAddress: string;
     orderProducts: PerfumeDetails[];
 }
@@ -50,6 +54,8 @@ export class CustomerService {
         private customerRepository: Repository<Customer>,
         @Inject(forwardRef(() => CartService))
         private cartService: CartService,
+        @Inject(forwardRef(() => OrderService))
+        private orderService: OrderService,
         private mailerService: MailerService
     ) {}
    
@@ -114,98 +120,197 @@ export class CustomerService {
         return customer;
     }
 
-    async createOrder(customerId: string, cartId: string): Promise<any> {
-        const result= await this.cartService.getAllcartsByCustomerId(customerId);
-        const customer=await this.customerRepository.findOne({ where: { id: customerId } });
-        const cart=result.find(cart => cart.id===cartId);
-        if(!cart){
-            throw new HttpException('Cart not found', HttpStatus.NOT_FOUND);
+    async createOrder(customerId: string, cartId: string, shippingAddress?: string): Promise<OrderDetails> {
+        try {
+            // Get customer details
+            const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+            if (!customer) {
+                throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
+            }
+
+            // Create order from cart using the order service
+            const createOrderDto: CreateOrderFromCartDto = {
+                cartId: cartId,
+                shippingAddress: shippingAddress || customer.address, // Use provided address or customer's default address
+                customerPhone: '', // Will be populated from customer entity
+                customerEmail: '', // Will be populated from customer entity
+                customerName: '', // Will be populated from customer entity
+                orderStatus: 'pending',
+                paymentStatus: 'pending'
+            };
+
+            const order = await this.orderService.createOrderFromCart(createOrderDto);
+            
+            // Convert order to OrderDetails format
+            const orderProducts: PerfumeDetails[] = [];
+            for (const orderProduct of order.orderProducts) {
+                orderProducts.push(new PerfumeDetails(
+                    orderProduct.perfume.name,
+                    orderProduct.perfume.brand,
+                    orderProduct.perfume.image,
+                    orderProduct.perfume.price,
+                    orderProduct.quantity
+                ));
+            }
+
+            const orderDetails = new OrderDetails();
+            orderDetails.orderId = order.id;
+            orderDetails.orderDate = order.orderDate;
+            orderDetails.orderTotal = order.totalPrice;
+            orderDetails.paymentStatus = order.paymentStatus;
+            orderDetails.orderStatus = order.orderStatus;
+            orderDetails.deliveryStatus = order.deliveryStatus;
+            orderDetails.customerName = order.customerName;
+            orderDetails.customerEmail = order.customerEmail;
+            orderDetails.customerPhone = order.customerPhone;
+            orderDetails.customerAddress = order.shippingAddress;
+            orderDetails.orderProducts = orderProducts;
+
+            return orderDetails;
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to create order',
+                error.status || HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
-        console.log("cart", cart);  
-        console.log("customer", customer);
-        cart.paymentStatus=true;
-        cart.orderCreatedDate=new Date();
-        await this.cartService.updateCart(cart);
-        const orderProducts: PerfumeDetails[] = [];
-        for(const cartProduct of cart.cartProducts){
-            orderProducts.push(new PerfumeDetails(
-                cartProduct.perfume.name,
-                cartProduct.perfume.brand,
-                cartProduct.perfume.image,
-                cartProduct.perfume.price,
-                cartProduct.quantity
-            ));
-        }
-        const orderDetails=new OrderDetails();
-        orderDetails.orderId=cartId;
-        orderDetails.orderDate=new Date();
-        orderDetails.orderTotal=cart.totalPrice;
-        orderDetails.orderProducts=orderProducts;
-        orderDetails.customerName=customer?.fullName || "";
-        orderDetails.customerEmail=customer?.email || "";
-        orderDetails.customerPhone=customer?.phone || 0;
-        orderDetails.customerAddress=customer?.address || "";
-        return orderDetails;
     }
 
-    async getAllPendingOrders(customerId: string): Promise<any> {
-        const customer=await this.customerRepository.findOne({ where: { id: customerId } });
-        const result=await this.cartService.getAllcartsByCustomerId(customerId);
-        const order=result.find(cart => cart.paymentStatus === true && cart.deliveryStatus === false);
-        const orderProducts: PerfumeDetails[] = [];
-        for(const cartProduct of order?.cartProducts || []){
-            orderProducts.push(new PerfumeDetails(
-                cartProduct.perfume.name,
-                cartProduct.perfume.brand,
-                cartProduct.perfume.image,
-                cartProduct.perfume.price,
-                cartProduct.quantity
-            ));
+    async getAllPendingOrders(customerId: string): Promise<OrderDetails[]> {
+        try {
+            const orders = await this.orderService.getOrdersByCustomerId(customerId);
+            const pendingOrders = orders.filter(order => 
+                order.orderStatus === 'pending' || 
+                order.orderStatus === 'confirmed' || 
+                order.orderStatus === 'shipped'
+            );
+
+            const orderDetailsList: OrderDetails[] = [];
+            for (const order of pendingOrders) {
+                const orderProducts: PerfumeDetails[] = [];
+                for (const orderProduct of order.orderProducts) {
+                    orderProducts.push(new PerfumeDetails(
+                        orderProduct.perfume.name,
+                        orderProduct.perfume.brand,
+                        orderProduct.perfume.image,
+                        orderProduct.perfume.price,
+                        orderProduct.quantity
+                    ));
+                }
+
+                const orderDetails = new OrderDetails();
+                orderDetails.orderId = order.id;
+                orderDetails.orderDate = order.orderDate;
+                orderDetails.orderTotal = order.totalPrice;
+                orderDetails.paymentStatus = order.paymentStatus;
+                orderDetails.orderStatus = order.orderStatus;
+                orderDetails.deliveryStatus = order.deliveryStatus;
+                orderDetails.customerName = order.customerName;
+                orderDetails.customerEmail = order.customerEmail;
+                orderDetails.customerPhone = order.customerPhone;
+                orderDetails.customerAddress = order.shippingAddress;
+                orderDetails.orderProducts = orderProducts;
+
+                orderDetailsList.push(orderDetails);
+            }
+
+            return orderDetailsList;
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to retrieve pending orders',
+                error.status || HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
-        const orderDetails=new OrderDetails();
-        orderDetails.orderId=order?.id || "";
-        orderDetails.orderDate=order?.orderCreatedDate || new Date();
-        orderDetails.orderTotal=order?.totalPrice || 0;
-        orderDetails.orderProducts=orderProducts;
-        orderDetails.paymentStatus=order?.paymentStatus ? "Paid" : "Pending";
-        orderDetails.orderStatus=order?.deliveryStatus ? "Delivered" : "Pending";
-        orderDetails.customerName=customer?.fullName || "";
-        orderDetails.customerEmail=customer?.email || "";
-        orderDetails.customerPhone=customer?.phone || 0;
-        orderDetails.customerAddress=customer?.address || "";
-        return orderDetails;
     }
-    async getAllDeliveredOrders(customerId: string): Promise<any> {
-        const customer=await this.customerRepository.findOne({ where: { id: customerId } });
-        const result=await this.cartService.getAllcartsByCustomerId(customerId);
-        const order=result.find(cart => cart.paymentStatus === true && cart.deliveryStatus === true);
-       if(!order){
-        throw new HttpException('No Completed Orders', HttpStatus.NOT_FOUND);
-       }
-       else{
-        const orderProducts: PerfumeDetails[] = [];
-        for(const cartProduct of order?.cartProducts || []){
-            orderProducts.push(new PerfumeDetails(
-                cartProduct.perfume.name,
-                cartProduct.perfume.brand,
-                cartProduct.perfume.image,
-                cartProduct.perfume.price,
-                cartProduct.quantity
-            ));
+
+    async getAllDeliveredOrders(customerId: string): Promise<OrderDetails[]> {
+        try {
+            const orders = await this.orderService.getOrdersByCustomerId(customerId);
+            const deliveredOrders = orders.filter(order => 
+                order.orderStatus === 'delivered' && order.deliveryStatus === true
+            );
+
+            if (deliveredOrders.length === 0) {
+                throw new HttpException('No Completed Orders', HttpStatus.NOT_FOUND);
+            }
+
+            const orderDetailsList: OrderDetails[] = [];
+            for (const order of deliveredOrders) {
+                const orderProducts: PerfumeDetails[] = [];
+                for (const orderProduct of order.orderProducts) {
+                    orderProducts.push(new PerfumeDetails(
+                        orderProduct.perfume.name,
+                        orderProduct.perfume.brand,
+                        orderProduct.perfume.image,
+                        orderProduct.perfume.price,
+                        orderProduct.quantity
+                    ));
+                }
+
+                const orderDetails = new OrderDetails();
+                orderDetails.orderId = order.id;
+                orderDetails.orderDate = order.orderDate;
+                orderDetails.orderTotal = order.totalPrice;
+                orderDetails.paymentStatus = order.paymentStatus;
+                orderDetails.orderStatus = order.orderStatus;
+                orderDetails.deliveryStatus = order.deliveryStatus;
+                orderDetails.customerName = order.customerName;
+                orderDetails.customerEmail = order.customerEmail;
+                orderDetails.customerPhone = order.customerPhone;
+                orderDetails.customerAddress = order.shippingAddress;
+                orderDetails.orderProducts = orderProducts;
+
+                orderDetailsList.push(orderDetails);
+            }
+
+            return orderDetailsList;
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to retrieve delivered orders',
+                error.status || HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
-        const orderDetails=new OrderDetails();
-        orderDetails.orderId=order?.id || "";
-        orderDetails.orderDate=order?.orderCreatedDate || new Date();   
-        orderDetails.orderTotal=order?.totalPrice || 0;
-        orderDetails.orderProducts=orderProducts;
-        orderDetails.paymentStatus=order?.paymentStatus ? "Paid" : "Pending";
-        orderDetails.orderStatus=order?.deliveryStatus ? "Delivered" : "Pending";
-        orderDetails.customerName=customer?.fullName || "";
-        orderDetails.customerEmail=customer?.email || "";
-        orderDetails.customerPhone=customer?.phone || 0;
-        orderDetails.customerAddress=customer?.address || "";
-        return orderDetails;
-       }
+    }
+
+    async getAllOrders(customerId: string): Promise<OrderDetails[]> {
+        try {
+            const orders = await this.orderService.getOrdersByCustomerId(customerId);
+            const orderDetailsList: OrderDetails[] = [];
+
+            for (const order of orders) {
+                const orderProducts: PerfumeDetails[] = [];
+                for (const orderProduct of order.orderProducts) {
+                    orderProducts.push(new PerfumeDetails(
+                        orderProduct.perfume.name,
+                        orderProduct.perfume.brand,
+                        orderProduct.perfume.image,
+                        orderProduct.perfume.price,
+                        orderProduct.quantity
+                    ));
+                }
+
+                const orderDetails = new OrderDetails();
+                orderDetails.orderId = order.id;
+                orderDetails.orderDate = order.orderDate;
+                orderDetails.orderTotal = order.totalPrice;
+                orderDetails.paymentStatus = order.paymentStatus;
+                orderDetails.orderStatus = order.orderStatus;
+                orderDetails.deliveryStatus = order.deliveryStatus;
+                orderDetails.customerName = order.customerName;
+                orderDetails.customerEmail = order.customerEmail;
+                orderDetails.customerPhone = order.customerPhone;
+                orderDetails.customerAddress = order.shippingAddress;
+                orderDetails.orderProducts = orderProducts;
+
+                orderDetailsList.push(orderDetails);
+            }
+
+            return orderDetailsList;
+        } catch (error) {
+            throw new HttpException(
+                error.message || 'Failed to retrieve orders',
+                error.status || HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
     async deleteCart(cartId: string): Promise<any> { 
         const result=await this.cartService.deleteCart(cartId);

@@ -58,6 +58,19 @@ export class CartService {
         return carts;
     }
 
+    async getCartById(cartId: string): Promise<Cart> {
+        const cart = await this.cartRepository.findOne({
+            where: { id: cartId },
+            relations: ['cartProducts', 'cartProducts.perfume']
+        });
+        
+        if (!cart) {
+            throw new HttpException('Cart not found', HttpStatus.NOT_FOUND);
+        }
+        
+        return cart;
+    }
+
     async updateCart(cart: Cart): Promise<Cart> {
         const updatedCart = await this.cartRepository.save(cart);
         return updatedCart;

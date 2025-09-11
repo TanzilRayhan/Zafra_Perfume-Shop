@@ -24,6 +24,7 @@ export class AuthService {
        const payload={
         sub:customer.id,
         email:customer.email,
+        role:customer.role || 'customer', // Default to 'customer' if role is not set
        }
        const token=this.jwtService.sign(payload);
        return {
@@ -34,13 +35,14 @@ export class AuthService {
             fullName:customer.fullName,
             phone:customer.phone,
             address:customer.address,
+            role:customer.role , // Ensure role is always returned
         }
        };
     }
    
     async signup(signupDto: SignupDto) {
         if(signupDto.role==="admin"){
-            // 
+            // Admin creation logic can be implemented here
             return "admin is created";
         }
         else{
@@ -56,7 +58,13 @@ export class AuthService {
                 throw new HttpException('Phone number already exists', HttpStatus.BAD_REQUEST);
             }
             
-            const newCustomer=await this.customerService.createCustomer(signupDto);
+            // Ensure role is set to 'customer' for regular signups
+            const customerData = {
+                ...signupDto,
+                role: signupDto.role || 'customer'
+            };
+            
+            const newCustomer=await this.customerService.createCustomer(customerData);
             return newCustomer;
         }
         

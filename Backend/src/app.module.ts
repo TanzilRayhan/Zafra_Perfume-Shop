@@ -5,6 +5,8 @@ import { CustomerModule } from './customer/customer.module';
 import { PerfumeModule } from './perfume/perfume.module';
 import { CartModule } from './cart/cart.module';
 import { CartProductModule } from './cartProduct/cartProduct.module';
+import { OrderModule } from './order/order.module';
+import { OrderProductModule } from './orderProduct/orderProduct.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ManagerModule } from './manager/manager.module';
@@ -33,6 +35,8 @@ import { AppController } from './app.controller';
     PerfumeModule,
     CartModule,
     CartProductModule,
+    OrderModule,
+    OrderProductModule,
     AuthModule
   ],
   controllers: [AppController],

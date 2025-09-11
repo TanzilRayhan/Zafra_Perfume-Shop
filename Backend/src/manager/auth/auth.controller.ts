@@ -10,7 +10,10 @@ export class AuthController {
   async login(
     @Body() body: { managername: string; password: string },
     @Session() session: Record<string, any>,
-  ) {
+  ) 
+  {
+      console.log('👉 Login hit:', body); // Debug
+
     const manager = await this.authService.validateManager(body.managername, body.password);
 
     if (manager) {

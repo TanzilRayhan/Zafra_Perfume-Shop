@@ -16,7 +16,7 @@ export class ManagerService {
     @InjectRepository(OrderEntity) private orderRepo: Repository<OrderEntity>,
   ) { }
 
- 
+
   async createManager(dto: CreateManagerDto) {
     // NEW: duplicate check
     const exists = await this.managerRepo.findOne({ where: { managername: dto.managername } });
@@ -60,6 +60,20 @@ export class ManagerService {
     const product = this.productRepo.create({ ...dto, manager });
     return await this.productRepo.save(product);
   }
+
+  async getProductById(id: string) {
+    const product = await this.productRepo.findOne({
+      where: { id },
+      relations: ['manager'], // চাইলে manager এর তথ্যও পাবেন
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return product;
+  }
+
 
   async updateProduct(id: string, dto: UpdateProductDto) {
     const product = await this.productRepo.findOne({ where: { id } });

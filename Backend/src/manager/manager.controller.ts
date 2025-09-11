@@ -28,26 +28,26 @@ export class ManagerController {
 
   // Search Manager by name
   @Get('search')
-  @UsePipes(new ValidationPipe({ whitelist: true })) 
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   getByManagerName(@Query() query: SearchManagerDto) {
     return this.managerService.findByManagerName(query.name);
   }
 
   // Delete Manager
-@Delete(':id')
-async removeManager(@Param('id', ParseUUIDPipe) id: string) {
-  try {
-    return await this.managerService.removeManager(id);
-  } catch (error) {
-    throw new HttpException(
-      {
-        status: HttpStatus.NOT_FOUND,
-        error: error.message || 'Failed to delete manager',
-      },
-      HttpStatus.NOT_FOUND,
-    );
+  @Delete(':id')
+  async removeManager(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      return await this.managerService.removeManager(id);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: error.message || 'Failed to delete manager',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
-}
 
 
   // porduct crud
@@ -58,11 +58,16 @@ async removeManager(@Param('id', ParseUUIDPipe) id: string) {
   getAllProducts() {
     return this.managerService.getAllProducts();
   }
+  // Get single product by id
+  @Get('product/:id')
+  getProductById(@Param('id', ParseUUIDPipe) id: string) {
+    return this.managerService.getProductById(id);
+  }
 
   //  Add product (Only logged-in Manager allowed)
   @Post('product')
   @UseGuards(SessionGuard)
-  @UsePipes(new ValidationPipe({ whitelist: true })) 
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   addProduct(
     @Session() session: Record<string, any>,
     @Body() dto: CreateProductDto,

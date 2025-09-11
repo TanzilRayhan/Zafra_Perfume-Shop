@@ -1,7 +1,7 @@
-import { IsString, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, MinLength, IsOptional } from 'class-validator';
 
-// CHANGED: Typo ঠিক—CreatManagerDto → CreateManagerDto
-export class CreateManagerDto { // CHANGED
+
+export class CreateManagerDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
@@ -10,17 +10,34 @@ export class CreateManagerDto { // CHANGED
   @IsString()
   @IsNotEmpty()
   @MaxLength(150)
-  fullName: string;
+  fullName: string; 
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  @MinLength(6) // NEW: ন্যূনতম length
+  @MinLength(6)
   password: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(150)
+  shopName?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  shopLocation?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(20)
+  phone?: string;
+
+
 }
 
-// NEW: search query validation এর জন্য
-export class SearchManagerDto { // NEW
+
+export class SearchManagerDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)

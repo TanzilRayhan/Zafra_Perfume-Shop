@@ -20,7 +20,7 @@ export class ManagerService {
   async createManager(dto: CreateManagerDto) {
     // NEW: duplicate check
     const exists = await this.managerRepo.findOne({ where: { managername: dto.managername } });
-    if (exists) throw new BadRequestException('Managername already exists');
+    if (exists) throw new BadRequestException('Managername name already exists');
 
     const hashed = await bcrypt.hash(dto.password, 10);
     const manager = this.managerRepo.create({ ...dto, password: hashed });

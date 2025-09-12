@@ -46,9 +46,18 @@ export class CustomerController {
         return this.customerService.getAllcartsByCustomerId(data.customerId);
     }
 
+    @Delete('delete-cart')
+    @UseGuards(AuthGuard)
+    async deleteCustomerCart(@Body() data: {cartId: string}): Promise<any> {
+        return this.customerService.deleteCart(data.cartId);
+    }
+
     @Post('create-order')
     @UseGuards(AuthGuard)
     async createOrder(@Body() data: {
+        customerName: string,
+        customerEmail: string,
+        customerPhone: string,
         customerId: string, 
         cartId: string, 
         shippingAddress?: string
@@ -57,7 +66,10 @@ export class CustomerController {
         return this.customerService.createOrder(
             data.customerId, 
             data.cartId, 
-            data.shippingAddress
+            data.shippingAddress,
+            data.customerPhone,
+            data.customerEmail,
+            data.customerName
         );
     }
    @Post('get-all-pending-orders')

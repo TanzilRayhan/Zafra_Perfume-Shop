@@ -120,10 +120,14 @@ export class CustomerService {
         return customer;
     }
 
-    async createOrder(customerId: string, cartId: string, shippingAddress?: string): Promise<OrderDetails> {
+    async createOrder(customerId: string, cartId: string, shippingAddress?: string, customerPhone?: string, customerEmail?: string, customerName?: string): Promise<OrderDetails> {
         try {
+            console.log('Customer service createOrder called with:', { customerId, cartId, shippingAddress, customerPhone, customerEmail, customerName });
+            
             // Get customer details
             const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+            console.log('Found customer:', customer);
+            
             if (!customer) {
                 throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
             }
@@ -131,15 +135,17 @@ export class CustomerService {
             // Create order from cart using the order service
             const createOrderDto: CreateOrderFromCartDto = {
                 cartId: cartId,
-                shippingAddress: shippingAddress || customer.address, // Use provided address or customer's default address
-                customerPhone: '', // Will be populated from customer entity
-                customerEmail: '', // Will be populated from customer entity
-                customerName: '', // Will be populated from customer entity
+                shippingAddress: shippingAddress || customer.address, 
+                customerPhone: customerPhone || customer.phone.toString(), 
+                customerEmail: customerEmail || customer.email, 
+                customerName: customerName || customer.fullName, 
                 orderStatus: 'pending',
                 paymentStatus: 'pending'
             };
 
+            console.log('Calling order service with DTO:', createOrderDto);
             const order = await this.orderService.createOrderFromCart(createOrderDto);
+            console.log('Order service returned:', order);
             
             // Convert order to OrderDetails format
             const orderProducts: PerfumeDetails[] = [];

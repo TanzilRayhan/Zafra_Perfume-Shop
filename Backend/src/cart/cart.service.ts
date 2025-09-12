@@ -14,28 +14,52 @@ export class CartService {
     ) {}
 
     async addToCart(cart: CartDto): Promise<Cart> {
-        const result  = await this.getAllcartsByCustomerId(cart.customerId);
-        const existingCart = result.find(cart => cart.paymentStatus===false && cart.deliveryStatus===false);
+        // Get all carts for the customer
+        const result = await this.getAllcartsByCustomerId(cart.customerId);
+        
+        // Find active cart (not paid and not delivered)
+        const existingCart = result.find(cartItem => 
+            cartItem.paymentStatus === false && cartItem.deliveryStatus === false
+        );
+        
         console.log("existingCart", existingCart);
+        
         if (existingCart) {
-            // throw new HttpException('Cart already exists', HttpStatus.BAD_REQUEST);
-
-            // update the cart
-            console.log("Added to cart ");
+            // Check if the same perfume already exists in the cart
+            const existingCartProduct = existingCart.cartProducts.find(
+                cp => cp.perfumeId === cart.perfumeId
+            );
+            
+            if (existingCartProduct) {
+                // Update existing cart product quantity and price
+                existingCartProduct.quantity += cart.quantity;
+                existingCartProduct.totalPrice += cart.totalPrice;
+                await this.cartProductService.updateCartProduct(existingCartProduct);
+            } else {
+                // Add new cart product
+                await this.cartProductService.createCartProduct({
+                    ...cart,
+                    cartId: existingCart.id
+                });
+            }
+            
+            // Update cart totals
             existingCart.quantity += cart.quantity;
             existingCart.totalPrice += cart.totalPrice;
             await this.cartRepository.save(existingCart);
-
-            // update the cart product
-            await this.cartProductService.createCartProduct({
-                ...cart,
-                cartId: existingCart.id
-            });
+            
             console.log("Updated cart and cart data: ", existingCart);
             return existingCart;
-        }
-        else{
-            const newCart = this.cartRepository.create(cart);
+        } else {
+            // Create new cart
+            const newCart = this.cartRepository.create({
+                customerId: cart.customerId,
+                quantity: cart.quantity,
+                totalPrice: cart.totalPrice,
+                paymentStatus: false,
+                deliveryStatus: false,
+                orderCreatedDate: null
+            });
             const savedCart = await this.cartRepository.save(newCart);
          
             // Create the cart product with the cart ID
@@ -43,11 +67,10 @@ export class CartService {
                 ...cart,
                 cartId: savedCart.id
             });
-           console.log("Created new cart and cart data: ", savedCart);
+            
+            console.log("Created new cart and cart data: ", savedCart);
             return savedCart;
         }
-        // First create and save the cart
-        
     }
 
     async getAllcartsByCustomerId(customerId: string): Promise<Cart[]> {
@@ -88,7 +111,44 @@ export class CartService {
         
         // Use remove method which handles cascades properly
         const deletedCart = await this.cartRepository.remove(cart);
-        return deletedCart ;
+        return deletedCart;
     }
-    
+
+    async getActiveCartByCustomerId(customerId: string): Promise<Cart | null> {
+        const carts = await this.getAllcartsByCustomerId(customerId);
+        return carts.find(cart => 
+            cart.paymentStatus === false && cart.deliveryStatus === false
+        ) || null;
+    }
+
+    async clearCart(cartId: string): Promise<Cart> {
+        const cart = await this.getCartById(cartId);
+        
+        // Delete all cart products
+        await this.cartProductService.deleteCartProductsByCartId(cartId);
+        
+        // Reset cart totals
+        cart.quantity = 0;
+        cart.totalPrice = 0;
+        
+        return await this.updateCart(cart);
+    }
+
+    async removeProductFromCart(cartId: string, perfumeId: string): Promise<Cart> {
+        const cart = await this.getCartById(cartId);
+        const cartProduct = cart.cartProducts.find(cp => cp.perfumeId === perfumeId);
+        
+        if (!cartProduct) {
+            throw new HttpException('Product not found in cart', HttpStatus.NOT_FOUND);
+        }
+        
+        // Update cart totals
+        cart.quantity -= cartProduct.quantity;
+        cart.totalPrice -= cartProduct.totalPrice;
+        
+        // Delete the cart product
+        await this.cartProductService.deleteCartProduct(cartProduct.id);
+        
+        return await this.updateCart(cart);
+    }
 }

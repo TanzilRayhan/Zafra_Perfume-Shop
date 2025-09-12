@@ -24,8 +24,23 @@ export class CartProductService {
         return savedCartProduct;
     }
 
+    async updateCartProduct(cartProduct: CartProduct): Promise<CartProduct> {
+        return await this.cartProductRepository.save(cartProduct);
+    }
+
+    async getCartProductsByCartId(cartId: string): Promise<CartProduct[]> {
+        return await this.cartProductRepository.find({
+            where: { cartId },
+            relations: ['perfume']
+        });
+    }
+
     async deleteCartProductsByCartId(cartId: string): Promise<any> {
         const result = await this.cartProductRepository.delete({ cartId });
         return result;
+    }
+
+    async deleteCartProduct(cartProductId: string): Promise<void> {
+        await this.cartProductRepository.delete(cartProductId);
     }
 }

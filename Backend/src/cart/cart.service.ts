@@ -77,5 +77,13 @@ export class CartService {
         const deletedCart = await this.cartRepository.remove(cart);
         return deletedCart ;
     }
+
+    async getAllCarts(): Promise<Cart[]> {
+    // Fetch all carts with products and perfumes
+    return await this.cartRepository.find({
+        relations: ['cartProducts', 'cartProducts.perfume', 'customer']
+    });
+}
+
     
 }

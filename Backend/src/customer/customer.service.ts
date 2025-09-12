@@ -8,6 +8,7 @@ import { CartService } from "src/cart/cart.service";
 import { CartDto } from "src/cart/dto/cart.dto";
 import { MailerService } from '@nestjs-modules/mailer';
 
+
 export class PerfumeDetails {
     perfumeName: string;
     perfumeBrand: string;
@@ -51,23 +52,23 @@ export class CustomerService {
         @Inject(forwardRef(() => CartService))
         private cartService: CartService,
         private mailerService: MailerService
-    ) {}
-   
+    ) { }
+
     async createCustomer(customer: CustomerDTO): Promise<Customer> {
         const newCustomer = this.customerRepository.create(customer);
-        
+
         // Temporarily disable email sending until SMTP is configured
         try {
             await this.mailerService.sendMail({
                 to: customer.email,
                 subject: 'Signup Successfully',
-                text: 'Hello '+customer.fullName+', Thank you for signing up. Welcome to our app.',
+                text: 'Hello ' + customer.fullName + ', Thank you for signing up. Welcome to our app.',
             });
             console.log('Welcome email sent successfully to:', customer.email);
         } catch (error) {
             console.log('Email sending failed, but customer creation continues:', error.message);
         }
-        
+
         return this.customerRepository.save(newCustomer);
     }
 
@@ -80,27 +81,27 @@ export class CustomerService {
         const result = await this.cartService.getAllcartsByCustomerId(customerId);
         const cartProducts: PerfumeDetails[] = [];
         const cart = result.find(cart => cart.paymentStatus === false && cart.deliveryStatus === false);
-        if(!cart){
+        if (!cart) {
             throw new HttpException('No Cart Found', HttpStatus.NOT_FOUND);
         }
-        else{
+        else {
             console.log("found cart", cart?.cartProducts);
-        for(const cartProduct of cart?.cartProducts || []){
-            cartProducts.push(new PerfumeDetails(
-                cartProduct.perfume.name,
-                cartProduct.perfume.brand,
-                cartProduct.perfume.image,
-                cartProduct.perfume.price,
-                cartProduct.quantity
-            ));
-        }
-        const cartDetails: CartDetails = {
-            cartId: cart?.id || "",
-            cartTotal: cart?.totalPrice || 0,
-            cartQuantity: cart?.quantity || 0, 
-            cartProducts: cartProducts
-        };
-        return cartDetails;
+            for (const cartProduct of cart?.cartProducts || []) {
+                cartProducts.push(new PerfumeDetails(
+                    cartProduct.perfume.name,
+                    cartProduct.perfume.brand,
+                    cartProduct.perfume.image,
+                    cartProduct.perfume.price,
+                    cartProduct.quantity
+                ));
+            }
+            const cartDetails: CartDetails = {
+                cartId: cart?.id || "",
+                cartTotal: cart?.totalPrice || 0,
+                cartQuantity: cart?.quantity || 0,
+                cartProducts: cartProducts
+            };
+            return cartDetails;
         }
     }
 
@@ -115,19 +116,19 @@ export class CustomerService {
     }
 
     async createOrder(customerId: string, cartId: string): Promise<any> {
-        const result= await this.cartService.getAllcartsByCustomerId(customerId);
-        const customer=await this.customerRepository.findOne({ where: { id: customerId } });
-        const cart=result.find(cart => cart.id===cartId);
-        if(!cart){
+        const result = await this.cartService.getAllcartsByCustomerId(customerId);
+        const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+        const cart = result.find(cart => cart.id === cartId);
+        if (!cart) {
             throw new HttpException('Cart not found', HttpStatus.NOT_FOUND);
         }
-        console.log("cart", cart);  
+        console.log("cart", cart);
         console.log("customer", customer);
-        cart.paymentStatus=true;
-        cart.orderCreatedDate=new Date();
+        cart.paymentStatus = true;
+        cart.orderCreatedDate = new Date();
         await this.cartService.updateCart(cart);
         const orderProducts: PerfumeDetails[] = [];
-        for(const cartProduct of cart.cartProducts){
+        for (const cartProduct of cart.cartProducts) {
             orderProducts.push(new PerfumeDetails(
                 cartProduct.perfume.name,
                 cartProduct.perfume.brand,
@@ -136,24 +137,24 @@ export class CustomerService {
                 cartProduct.quantity
             ));
         }
-        const orderDetails=new OrderDetails();
-        orderDetails.orderId=cartId;
-        orderDetails.orderDate=new Date();
-        orderDetails.orderTotal=cart.totalPrice;
-        orderDetails.orderProducts=orderProducts;
-        orderDetails.customerName=customer?.fullName || "";
-        orderDetails.customerEmail=customer?.email || "";
-        orderDetails.customerPhone=customer?.phone || 0;
-        orderDetails.customerAddress=customer?.address || "";
+        const orderDetails = new OrderDetails();
+        orderDetails.orderId = cartId;
+        orderDetails.orderDate = new Date();
+        orderDetails.orderTotal = cart.totalPrice;
+        orderDetails.orderProducts = orderProducts;
+        orderDetails.customerName = customer?.fullName || "";
+        orderDetails.customerEmail = customer?.email || "";
+        orderDetails.customerPhone = customer?.phone || 0;
+        orderDetails.customerAddress = customer?.address || "";
         return orderDetails;
     }
 
     async getAllPendingOrders(customerId: string): Promise<any> {
-        const customer=await this.customerRepository.findOne({ where: { id: customerId } });
-        const result=await this.cartService.getAllcartsByCustomerId(customerId);
-        const order=result.find(cart => cart.paymentStatus === true && cart.deliveryStatus === false);
+        const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+        const result = await this.cartService.getAllcartsByCustomerId(customerId);
+        const order = result.find(cart => cart.paymentStatus === true && cart.deliveryStatus === false);
         const orderProducts: PerfumeDetails[] = [];
-        for(const cartProduct of order?.cartProducts || []){
+        for (const cartProduct of order?.cartProducts || []) {
             orderProducts.push(new PerfumeDetails(
                 cartProduct.perfume.name,
                 cartProduct.perfume.brand,
@@ -162,69 +163,69 @@ export class CustomerService {
                 cartProduct.quantity
             ));
         }
-        const orderDetails=new OrderDetails();
-        orderDetails.orderId=order?.id || "";
-        orderDetails.orderDate=order?.orderCreatedDate || new Date();
-        orderDetails.orderTotal=order?.totalPrice || 0;
-        orderDetails.orderProducts=orderProducts;
-        orderDetails.paymentStatus=order?.paymentStatus ? "Paid" : "Pending";
-        orderDetails.orderStatus=order?.deliveryStatus ? "Delivered" : "Pending";
-        orderDetails.customerName=customer?.fullName || "";
-        orderDetails.customerEmail=customer?.email || "";
-        orderDetails.customerPhone=customer?.phone || 0;
-        orderDetails.customerAddress=customer?.address || "";
+        const orderDetails = new OrderDetails();
+        orderDetails.orderId = order?.id || "";
+        orderDetails.orderDate = order?.orderCreatedDate || new Date();
+        orderDetails.orderTotal = order?.totalPrice || 0;
+        orderDetails.orderProducts = orderProducts;
+        orderDetails.paymentStatus = order?.paymentStatus ? "Paid" : "Pending";
+        orderDetails.orderStatus = order?.deliveryStatus ? "Delivered" : "Pending";
+        orderDetails.customerName = customer?.fullName || "";
+        orderDetails.customerEmail = customer?.email || "";
+        orderDetails.customerPhone = customer?.phone || 0;
+        orderDetails.customerAddress = customer?.address || "";
         return orderDetails;
     }
     async getAllDeliveredOrders(customerId: string): Promise<any> {
-        const customer=await this.customerRepository.findOne({ where: { id: customerId } });
-        const result=await this.cartService.getAllcartsByCustomerId(customerId);
-        const order=result.find(cart => cart.paymentStatus === true && cart.deliveryStatus === true);
-       if(!order){
-        throw new HttpException('No Completed Orders', HttpStatus.NOT_FOUND);
-       }
-       else{
-        const orderProducts: PerfumeDetails[] = [];
-        for(const cartProduct of order?.cartProducts || []){
-            orderProducts.push(new PerfumeDetails(
-                cartProduct.perfume.name,
-                cartProduct.perfume.brand,
-                cartProduct.perfume.image,
-                cartProduct.perfume.price,
-                cartProduct.quantity
-            ));
+        const customer = await this.customerRepository.findOne({ where: { id: customerId } });
+        const result = await this.cartService.getAllcartsByCustomerId(customerId);
+        const order = result.find(cart => cart.paymentStatus === true && cart.deliveryStatus === true);
+        if (!order) {
+            throw new HttpException('No Completed Orders', HttpStatus.NOT_FOUND);
         }
-        const orderDetails=new OrderDetails();
-        orderDetails.orderId=order?.id || "";
-        orderDetails.orderDate=order?.orderCreatedDate || new Date();   
-        orderDetails.orderTotal=order?.totalPrice || 0;
-        orderDetails.orderProducts=orderProducts;
-        orderDetails.paymentStatus=order?.paymentStatus ? "Paid" : "Pending";
-        orderDetails.orderStatus=order?.deliveryStatus ? "Delivered" : "Pending";
-        orderDetails.customerName=customer?.fullName || "";
-        orderDetails.customerEmail=customer?.email || "";
-        orderDetails.customerPhone=customer?.phone || 0;
-        orderDetails.customerAddress=customer?.address || "";
-        return orderDetails;
-       }
+        else {
+            const orderProducts: PerfumeDetails[] = [];
+            for (const cartProduct of order?.cartProducts || []) {
+                orderProducts.push(new PerfumeDetails(
+                    cartProduct.perfume.name,
+                    cartProduct.perfume.brand,
+                    cartProduct.perfume.image,
+                    cartProduct.perfume.price,
+                    cartProduct.quantity
+                ));
+            }
+            const orderDetails = new OrderDetails();
+            orderDetails.orderId = order?.id || "";
+            orderDetails.orderDate = order?.orderCreatedDate || new Date();
+            orderDetails.orderTotal = order?.totalPrice || 0;
+            orderDetails.orderProducts = orderProducts;
+            orderDetails.paymentStatus = order?.paymentStatus ? "Paid" : "Pending";
+            orderDetails.orderStatus = order?.deliveryStatus ? "Delivered" : "Pending";
+            orderDetails.customerName = customer?.fullName || "";
+            orderDetails.customerEmail = customer?.email || "";
+            orderDetails.customerPhone = customer?.phone || 0;
+            orderDetails.customerAddress = customer?.address || "";
+            return orderDetails;
+        }
     }
-    async deleteCart(cartId: string): Promise<any> { 
-        const result=await this.cartService.deleteCart(cartId);
+    async deleteCart(cartId: string): Promise<any> {
+        const result = await this.cartService.deleteCart(cartId);
         return result;
     }
     async updateCustomer(customerId: string, updateData: { fullName?: string, phone?: number, email?: string, address?: string }): Promise<Customer> {
         console.log("Customer ID:", customerId);
         console.log("Update data:", updateData);
-        
+
         const customerData = await this.customerRepository.findOne({ where: { id: customerId } });
         console.log("Found customer:", customerData);
-        
+
         if (!customerData) {
             throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
         }
 
         if (updateData.email !== customerData.email) {
-            const existingCustomerWithEmail = await this.customerRepository.findOne({ 
-                where: { email: updateData.email } 
+            const existingCustomerWithEmail = await this.customerRepository.findOne({
+                where: { email: updateData.email }
             });
             if (existingCustomerWithEmail && existingCustomerWithEmail.id !== customerId) {
                 throw new HttpException('Email already exists for another customer', HttpStatus.CONFLICT);
@@ -232,8 +233,8 @@ export class CustomerService {
         }
 
         if (updateData.phone !== customerData.phone) {
-            const existingCustomerWithPhone = await this.customerRepository.findOne({ 
-                where: { phone: updateData.phone } 
+            const existingCustomerWithPhone = await this.customerRepository.findOne({
+                where: { phone: updateData.phone }
             });
             if (existingCustomerWithPhone && existingCustomerWithPhone.id !== customerId) {
                 throw new HttpException('Phone number already exists for another customer', HttpStatus.CONFLICT);
@@ -241,7 +242,7 @@ export class CustomerService {
         }
 
         const finalUpdateData: Partial<Customer> = {};
-        
+
         if (updateData.fullName !== undefined && updateData.fullName !== null) {
             finalUpdateData.fullName = updateData.fullName;
         }
@@ -257,7 +258,7 @@ export class CustomerService {
 
         if (Object.keys(finalUpdateData).length > 0) {
             await this.customerRepository.update(customerId, finalUpdateData);
-        } 
+        }
         const updatedCustomerData = await this.customerRepository.findOne({ where: { id: customerId } });
         if (!updatedCustomerData) {
             throw new HttpException('Customer not found after update', HttpStatus.NOT_FOUND);
@@ -268,9 +269,41 @@ export class CustomerService {
         console.log("customer id", id);
         const customer = await this.customerRepository.findOne({ where: { id: id } });
         console.log("customer data", customer);
-        if(!customer){
+        if (!customer) {
             throw new HttpException('Customer not found', HttpStatus.NOT_FOUND);
         }
         return customer;
     }
+    async getAllCustomers(): Promise<Customer[]> {
+        return await this.customerRepository.find();
+    }
+
+
+async getAllCarts(): Promise<CartDetails[]> {
+    const carts = await this.cartService.getAllCarts();
+
+    return carts.map(cart => {
+        const cartProducts: PerfumeDetails[] = (cart.cartProducts || []).map(cp => new PerfumeDetails(
+            cp.perfume.name,
+            cp.perfume.brand,
+            cp.perfume.image,
+            cp.perfume.price,
+            cp.quantity
+        ));
+
+        const cartDetails: CartDetails & { customerName: string, customerEmail: string, customerPhone: number } = {
+            cartId: cart.id,
+            cartTotal: cart.totalPrice,
+            cartQuantity: cart.quantity,
+            cartProducts: cartProducts,
+            customerName: cart.customer?.fullName || "",
+            customerEmail: cart.customer?.email || "",
+            customerPhone: cart.customer?.phone || 0
+        };
+        return cartDetails;
+    });
+}
+
+
+
 }

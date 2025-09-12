@@ -21,7 +21,7 @@ import { AppController } from './app.controller';
       host: 'localhost', 
       port: 5432,
       username: 'postgres',
-      password: '123456',
+      password: 'admin',
       database: 'zafra',
       autoLoadEntities: true,
       synchronize: true,

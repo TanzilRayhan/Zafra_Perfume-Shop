@@ -11,11 +11,11 @@ export class CartService {
         @InjectRepository(Cart)
         private cartRepository: Repository<Cart>,
         private cartProductService: CartProductService,
-    ) {}
+    ) { }
 
     async addToCart(cart: CartDto): Promise<Cart> {
-        const result  = await this.getAllcartsByCustomerId(cart.customerId);
-        const existingCart = result.find(cart => cart.paymentStatus===false && cart.deliveryStatus===false);
+        const result = await this.getAllcartsByCustomerId(cart.customerId);
+        const existingCart = result.find(cart => cart.paymentStatus === false && cart.deliveryStatus === false);
         console.log("existingCart", existingCart);
         if (existingCart) {
             // throw new HttpException('Cart already exists', HttpStatus.BAD_REQUEST);
@@ -34,24 +34,24 @@ export class CartService {
             console.log("Updated cart and cart data: ", existingCart);
             return existingCart;
         }
-        else{
+        else {
             const newCart = this.cartRepository.create(cart);
             const savedCart = await this.cartRepository.save(newCart);
-         
+
             // Create the cart product with the cart ID
             await this.cartProductService.createCartProduct({
                 ...cart,
                 cartId: savedCart.id
             });
-           console.log("Created new cart and cart data: ", savedCart);
+            console.log("Created new cart and cart data: ", savedCart);
             return savedCart;
         }
         // First create and save the cart
-        
+
     }
 
     async getAllcartsByCustomerId(customerId: string): Promise<Cart[]> {
-        const carts = await this.cartRepository.find({ 
+        const carts = await this.cartRepository.find({
             where: { customerId },
             relations: ['cartProducts', 'cartProducts.perfume']
         });
@@ -68,22 +68,42 @@ export class CartService {
             where: { id: cartId },
             relations: ['cartProducts']
         });
-        
+
         if (!cart) {
             throw new HttpException('Cart not found', HttpStatus.NOT_FOUND);
         }
-        
+
         // Use remove method which handles cascades properly
         const deletedCart = await this.cartRepository.remove(cart);
-        return deletedCart ;
+        return deletedCart;
     }
 
     async getAllCarts(): Promise<Cart[]> {
-    // Fetch all carts with products and perfumes
-    return await this.cartRepository.find({
-        relations: ['cartProducts', 'cartProducts.perfume', 'customer']
-    });
-}
+        // Fetch all carts with products and perfumes
+        return await this.cartRepository.find({
+            relations: ['cartProducts', 'cartProducts.perfume', 'customer']
+        });
+    }
 
-    
+    async updateCartStatus(id: string, updateData: { paymentStatus?: boolean; deliveryStatus?: boolean }): Promise<Cart> {
+        const cart = await this.cartRepository.findOne({
+            where: { id },
+            relations: ['cartProducts', 'cartProducts.perfume', 'customer']
+        });
+
+        if (!cart) {
+            throw new HttpException('Cart not found', HttpStatus.NOT_FOUND);
+        }
+
+        if (updateData.paymentStatus !== undefined) {
+            cart.paymentStatus = updateData.paymentStatus;
+        }
+
+        if (updateData.deliveryStatus !== undefined) {
+            cart.deliveryStatus = updateData.deliveryStatus;
+        }
+
+        return this.cartRepository.save(cart);
+    }
+
 }

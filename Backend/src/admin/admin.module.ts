@@ -19,7 +19,7 @@ import { ReviewService } from '../review/review.service';
 // Entities - Using unified entities
 import { User } from './entities/user.entity';
 import { Perfume } from '../perfume/perfume.entity'; // Use unified Perfume entity
-import { Order } from '../order/order.entity'; // Use unified Order entity
+import { Order } from '../customer/order.entity'; // Use unified Order entity
 import { Review } from '../review/review.entity'; // Use unified Review entity from src
 
 // Auth

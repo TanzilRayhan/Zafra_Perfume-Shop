@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { Cart } from '../cart/cart.entity';
-import { Order } from '../order/order.entity';
+import { Order } from './order.entity';
 import { Review } from '../review/review.entity';
 import * as bcrypt from 'bcrypt';
 

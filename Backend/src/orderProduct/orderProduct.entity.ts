@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Order } from '../order/order.entity';
+import { Order } from '../customer/order.entity';
 import { Perfume } from '../perfume/perfume.entity';
 
 @Entity('orderProduct')

@@ -77,29 +77,21 @@ export class CustomerController {
     return this.customerService.deleteCart(data.cartId);
   }
 
-  // DEPRECATED: Use /orders/from-cart instead for order creation
   @Post('create-order')
   @UseGuards(AuthGuard)
   async createOrder(
     @Body()
     data: {
-      customerName: string;
-      customerEmail: string;
-      customerPhone: string;
       customerId: string;
       cartId: string;
-      shippingAddress?: string;
+      shippingAddress?: string; // Optional - uses customer's address if not provided
     },
   ): Promise<any> {
-    console.log('⚠️  DEPRECATED: Use /orders/from-cart endpoint instead');
     console.log('createOrder data', data);
     return this.customerService.createOrder(
       data.customerId,
       data.cartId,
       data.shippingAddress,
-      data.customerPhone,
-      data.customerEmail,
-      data.customerName,
     );
   }
 
@@ -138,12 +130,5 @@ export class CustomerController {
     );
     console.log('customerId', data.customerId);
     return this.customerService.getAllOrders(data.customerId);
-  }
-  @Delete('delete-cart')
-  @UseGuards(AuthGuard)
-  async deleteCart(@Body() data: { cartId: string }): Promise<any> {
-    console.log('data', data);
-    console.log('cartId', data.cartId);
-    return this.customerService.deleteCart(data.cartId);
   }
 }

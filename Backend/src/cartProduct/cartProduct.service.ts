@@ -35,7 +35,7 @@ export class CartProductService {
   async getCartProductsByCartId(cartId: string): Promise<CartProduct[]> {
     return await this.cartProductRepository.find({
       where: { cartId },
-      relations: ['product'],
+      relations: ['perfume'],
     });
   }
 

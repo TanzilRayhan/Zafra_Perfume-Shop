@@ -47,10 +47,10 @@ export class CartService {
       // Update cart totals
       existingCart.quantity += cart.quantity;
       existingCart.totalPrice += cart.totalPrice;
-      await this.cartRepository.save(existingCart);
+      const updatedCart = await this.cartRepository.save(existingCart);
 
-      console.log('Updated cart and cart data: ', existingCart);
-      return existingCart;
+      console.log('Updated cart and cart data: ', updatedCart);
+      return updatedCart;
     } else {
       // Create new cart
       const newCart = this.cartRepository.create({

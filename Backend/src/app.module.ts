@@ -8,6 +8,7 @@ import { CartProductModule } from './cartProduct/cartProduct.module';
 import { OrderModule } from './order/order.module';
 import { OrderProductModule } from './orderProduct/orderProduct.module';
 import { AuthModule } from './auth/auth.module';
+import { ReviewModule } from './review/review.module';
 import { ConfigModule } from '@nestjs/config';
 import { ManagerModule } from './manager/manager.module';
 import { AppService } from './app.service';
@@ -20,10 +21,10 @@ import { AppController } from './app.controller';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost', 
+      host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '123456',
+      password: 'admin',
       database: 'zafra',
       autoLoadEntities: true,
       synchronize: true,
@@ -37,9 +38,10 @@ import { AppController } from './app.controller';
     CartProductModule,
     OrderModule,
     OrderProductModule,
-    AuthModule
+    AuthModule,
+    ReviewModule,
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService],
 })
 export class AppModule {}

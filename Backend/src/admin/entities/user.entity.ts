@@ -1,8 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BeforeInsert } from 'typeorm';
-import { Order } from './order.entity';
-import { Review } from './review.entity';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert } from 'typeorm';
 import { Role } from '../common/enums/user-role.enum';
-import * as bcrypt from 'bcrypt'; 
+import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User {
@@ -20,12 +18,6 @@ export class User {
 
   @Column({ type: 'enum', enum: Role, default: Role.Customer })
   role: Role;
-
-  @OneToMany(() => Order, (order) => order.user)
-  orders: Order[];
-
-  @OneToMany(() => Review, (review) => review.user)
-  reviews: Review[];
 
   @BeforeInsert()
   async hashPassword() {

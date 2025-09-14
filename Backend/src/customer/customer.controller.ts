@@ -1,5 +1,19 @@
-import { Controller, Get, Param, Post, Body, ValidationPipe, BadRequestException, UploadedFile, UseInterceptors, Patch, Delete, Query, UseGuards } from '@nestjs/common';
-import { CustomerService } from "./customer.service";
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  ValidationPipe,
+  BadRequestException,
+  UploadedFile,
+  UseInterceptors,
+  Patch,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { CustomerService } from './customer.service';
 import { CustomerDTO } from './dto/customer.DTO';
 import { diskStorage, MulterError } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -11,91 +25,125 @@ import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('customer')
 export class CustomerController {
-    constructor(private readonly customerService: CustomerService) { }
+  constructor(private readonly customerService: CustomerService) {}
 
-    @Post('create')
-    async createCustomer(@Body() customer: CustomerDTO): Promise<Customer> {
-        return this.customerService.createCustomer(customer);
-    }
+  @Post('create')
+  async createCustomer(@Body() customer: CustomerDTO): Promise<Customer> {
+    return this.customerService.createCustomer(customer);
+  }
 
-    @Post('update-customer')
-    @UseGuards(AuthGuard)
-    async updateCustomer(@Body() data: { customerID: string, fullName?: string, phone?: number, email?: string, address?: string }): Promise<Customer> {
-        return this.customerService.updateCustomer(data.customerID, {
-            fullName: data.fullName,
-            phone: data.phone,
-            email: data.email,
-            address: data.address
-        });
-    }
-    @Post('get-customer')
-    @UseGuards(AuthGuard)
-    async getCustomer(@Body() data: {customerId: string}): Promise<Customer> {
-        return this.customerService.getCustomer(data.customerId);
-    }
-    @Post('add-to-cart')
-    @UseGuards(AuthGuard)
-    async addToCart(@Body() cart: CartDto): Promise<Cart> {
-        return this.customerService.addToCart(cart);
-    }
-   
-    @Post('get-all-carts')
-    @UseGuards(AuthGuard)
-    async getAllcartsByCustomerId(@Body() data: {customerId: string}): Promise<any> {
-        console.log("customerId", data.customerId);
-        return this.customerService.getAllcartsByCustomerId(data.customerId);
-    }
+  @Post('update-customer')
+  @UseGuards(AuthGuard)
+  async updateCustomer(
+    @Body()
+    data: {
+      customerID: string;
+      fullName?: string;
+      phone?: number;
+      email?: string;
+      address?: string;
+    },
+  ): Promise<Customer> {
+    return this.customerService.updateCustomer(data.customerID, {
+      fullName: data.fullName,
+      phone: data.phone,
+      email: data.email,
+      address: data.address,
+    });
+  }
+  @Post('get-customer')
+  @UseGuards(AuthGuard)
+  async getCustomer(@Body() data: { customerId: string }): Promise<Customer> {
+    return this.customerService.getCustomer(data.customerId);
+  }
+  @Post('add-to-cart')
+  @UseGuards(AuthGuard)
+  async addToCart(@Body() cart: CartDto): Promise<Cart> {
+    return this.customerService.addToCart(cart);
+  }
 
-    @Delete('delete-cart')
-    @UseGuards(AuthGuard)
-    async deleteCustomerCart(@Body() data: {cartId: string}): Promise<any> {
-        return this.customerService.deleteCart(data.cartId);
-    }
+  @Post('get-all-carts')
+  @UseGuards(AuthGuard)
+  async getAllcartsByCustomerId(
+    @Body() data: { customerId: string },
+  ): Promise<any> {
+    console.log('customerId', data.customerId);
+    return this.customerService.getAllcartsByCustomerId(data.customerId);
+  }
 
-    @Post('create-order')
-    @UseGuards(AuthGuard)
-    async createOrder(@Body() data: {
-        customerName: string,
-        customerEmail: string,
-        customerPhone: string,
-        customerId: string, 
-        cartId: string, 
-        shippingAddress?: string
-    }): Promise<any> {
-        console.log("createOrder data", data); 
-        return this.customerService.createOrder(
-            data.customerId, 
-            data.cartId, 
-            data.shippingAddress,
-            data.customerPhone,
-            data.customerEmail,
-            data.customerName
-        );
-    }
-   @Post('get-all-pending-orders')
-   @UseGuards(AuthGuard)
-   async getAllPendingOrders(@Body() data: {customerId: string}): Promise<any> {
-    console.log("customerId", data.customerId);
-    return this.customerService.getAllPendingOrders(data.customerId);
-   }
-   @Post('get-all-delivered-orders')
-   @UseGuards(AuthGuard)
-   async getAllDeliveredOrders(@Body() data: {customerId: string}): Promise<any> {
-    console.log("customerId", data.customerId);
-    return this.customerService.getAllDeliveredOrders(data.customerId);
-   }
-
-   @Post('get-all-orders')
-   @UseGuards(AuthGuard)
-   async getAllOrders(@Body() data: {customerId: string}): Promise<any> {
-    console.log("customerId", data.customerId);
-    return this.customerService.getAllOrders(data.customerId);
-   }
-   @Delete('delete-cart')
-   @UseGuards(AuthGuard)
-   async deleteCart(@Body() data: {cartId: string}): Promise<any> {
-    console.log("data", data);
-    console.log("cartId", data.cartId);
+  @Delete('delete-cart')
+  @UseGuards(AuthGuard)
+  async deleteCustomerCart(@Body() data: { cartId: string }): Promise<any> {
     return this.customerService.deleteCart(data.cartId);
-   }
+  }
+
+  // DEPRECATED: Use /orders/from-cart instead for order creation
+  @Post('create-order')
+  @UseGuards(AuthGuard)
+  async createOrder(
+    @Body()
+    data: {
+      customerName: string;
+      customerEmail: string;
+      customerPhone: string;
+      customerId: string;
+      cartId: string;
+      shippingAddress?: string;
+    },
+  ): Promise<any> {
+    console.log('⚠️  DEPRECATED: Use /orders/from-cart endpoint instead');
+    console.log('createOrder data', data);
+    return this.customerService.createOrder(
+      data.customerId,
+      data.cartId,
+      data.shippingAddress,
+      data.customerPhone,
+      data.customerEmail,
+      data.customerName,
+    );
+  }
+
+  // DEPRECATED: Use /orders/customer/:customerId instead
+  @Post('get-all-pending-orders')
+  @UseGuards(AuthGuard)
+  async getAllPendingOrders(
+    @Body() data: { customerId: string },
+  ): Promise<any> {
+    console.log(
+      '⚠️  DEPRECATED: Use /orders/customer/:customerId endpoint instead',
+    );
+    console.log('customerId', data.customerId);
+    return this.customerService.getAllPendingOrders(data.customerId);
+  }
+
+  // DEPRECATED: Use /orders/customer/:customerId instead
+  @Post('get-all-delivered-orders')
+  @UseGuards(AuthGuard)
+  async getAllDeliveredOrders(
+    @Body() data: { customerId: string },
+  ): Promise<any> {
+    console.log(
+      '⚠️  DEPRECATED: Use /orders/customer/:customerId endpoint instead',
+    );
+    console.log('customerId', data.customerId);
+    return this.customerService.getAllDeliveredOrders(data.customerId);
+  }
+
+  // DEPRECATED: Use /orders/customer/:customerId instead
+  @Post('get-all-orders')
+  @UseGuards(AuthGuard)
+  async getAllOrders(@Body() data: { customerId: string }): Promise<any> {
+    console.log(
+      '⚠️  DEPRECATED: Use /orders/customer/:customerId endpoint instead',
+    );
+    console.log('customerId', data.customerId);
+    return this.customerService.getAllOrders(data.customerId);
+  }
+  @Delete('delete-cart')
+  @UseGuards(AuthGuard)
+  async deleteCart(@Body() data: { cartId: string }): Promise<any> {
+    console.log('data', data);
+    console.log('cartId', data.cartId);
+    return this.customerService.deleteCart(data.cartId);
+  }
 }

@@ -23,5 +23,5 @@ export class RegisterUserDto {
 
   @IsEnum(Role, { message: 'Role must be customer, manager, or admin' })
   @IsNotEmpty({ message: 'Role is required' })
-  role: Role = Role.Customer;
+  role: Role;
 }

@@ -1,34 +1,38 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CartDto {
+  @IsNotEmpty()
+  @IsNumber()
+  quantity: number;
 
+  @IsNotEmpty()
+  @IsNumber()
+  totalPrice: number;
 
-    @IsNotEmpty()
-    @IsNumber()
-    quantity: number;
+  @IsOptional()
+  @IsBoolean()
+  paymentStatus: boolean = false;
 
-    @IsNotEmpty()
-    @IsNumber()
-    totalPrice: number;
+  @IsOptional()
+  @IsBoolean()
+  deliveryStatus: boolean = false;
 
-    @IsOptional()
-    @IsBoolean()
-    paymentStatus: boolean = false;
+  @IsNotEmpty()
+  @IsString()
+  customerId: string;
 
-    @IsOptional()
-    @IsBoolean()
-    deliveryStatus: boolean = false;
+  @IsNotEmpty()
+  @IsString()
+  perfumeId: string;
 
-    @IsNotEmpty()
-    @IsString()
-    customerId: string;
-
-    @IsNotEmpty()
-    @IsString()
-    perfumeId: string;
-
-    @IsOptional()
-    @IsDate()
-    orderCreatedDate: Date | null;
-
+  @IsOptional()
+  @IsDate()
+  orderCreatedDate: Date | null;
 }

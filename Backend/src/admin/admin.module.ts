@@ -12,55 +12,49 @@ import { AuthController } from './auth/auth.controller';
 import { UsersService } from './services/users.service';
 import { ProductsService } from './services/products.service';
 import { OrdersService } from './services/orders.service';
-import { ReviewsService } from './services/reviews.service';
 import { AuthService } from './auth/auth.service';
 import { MailerService } from './mailer/mailer.service';
+import { ReviewService } from '../review/review.service';
 
-// Entities
+// Entities - Using unified entities
 import { User } from './entities/user.entity';
-import { Product } from './entities/product.entity';
-import { Order } from './entities/order.entity';
-import { Review } from './entities/review.entity';
+import { Perfume } from '../perfume/perfume.entity'; // Use unified Perfume entity
+import { Order } from '../order/order.entity'; // Use unified Order entity
+import { Review } from '../review/review.entity'; // Use unified Review entity from src
 
 // Auth
 import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
-  
-    TypeOrmModule.forFeature([User, Product, Order, Review]),
-    
+    TypeOrmModule.forFeature([User, Perfume, Order, Review]),
 
     PassportModule,
     JwtModule.register({
-      secret: 'secret-key', 
+      secret: 'secret-key',
       signOptions: { expiresIn: '300m' },
     }),
-
 
     NestMailerModule.forRoot({
       transport: {
         host: 'smtp.gmail.com',
         secure: true,
         auth: {
-          user: 'tanzilrayhan169@gmail.com', 
+          user: 'tanzilrayhan169@gmail.com',
           pass: 'auub ixkd zoxl uhxk',
         },
       },
     }),
   ],
-  controllers: [
-    AdminController,
-    AuthController
-  ],
+  controllers: [AdminController, AuthController],
   providers: [
     UsersService,
     ProductsService,
     OrdersService,
-    ReviewsService,
+    ReviewService,
     AuthService,
     JwtStrategy,
-    MailerService
+    MailerService,
   ],
 })
 export class AdminModule {}

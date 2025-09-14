@@ -1,38 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product } from '../entities/product.entity';
-import { CreateProductDto } from '../dto/create-product.dto';
-import { UpdateProductDto } from '../dto/update-product.dto';
+import { Perfume } from '../../perfume/perfume.entity';
+import { CreatePerfumeDto } from '../../perfume/dto/create-perfume.dto';
+import { UpdatePerfumeDto } from '../../perfume/dto/update-perfume.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(
-    @InjectRepository(Product)
-    private productsRepository: Repository<Product>,
+    @InjectRepository(Perfume)
+    private perfumesRepository: Repository<Perfume>,
   ) {}
 
-  create(createProductDto: CreateProductDto): Promise<Product> {
-    const product = this.productsRepository.create(createProductDto);
-    return this.productsRepository.save(product);
-  }
-  
-  findAll(): Promise<Product[]> {
-    return this.productsRepository.find();
+  create(createPerfumeDto: CreatePerfumeDto): Promise<Perfume> {
+    const perfume = this.perfumesRepository.create(createPerfumeDto);
+    return this.perfumesRepository.save(perfume);
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
-    const product = await this.productsRepository.preload({ id, ...updateProductDto });
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-    return this.productsRepository.save(product);
+  findAll(): Promise<Perfume[]> {
+    return this.perfumesRepository.find();
   }
 
-  async remove(id: number): Promise<void> {
-    const result = await this.productsRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
+  async findOne(id: string): Promise<Perfume> {
+    const perfume = await this.perfumesRepository.findOne({ where: { id } });
+    if (!perfume) {
+      throw new NotFoundException(`Perfume with ID ${id} not found`);
     }
+    return perfume;
+  }
+
+  async update(
+    id: string,
+    updatePerfumeDto: UpdatePerfumeDto,
+  ): Promise<Perfume> {
+    const perfume = await this.findOne(id);
+    Object.assign(perfume, updatePerfumeDto);
+    return this.perfumesRepository.save(perfume);
+  }
+
+  async remove(id: string): Promise<void> {
+    const perfume = await this.findOne(id);
+    await this.perfumesRepository.remove(perfume);
   }
 }

@@ -1,39 +1,46 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, BeforeInsert, JoinColumn } from "typeorm";
+import {
+  Entity,
+  PrimaryColumn,
+  Column,
+  ManyToOne,
+  BeforeInsert,
+  JoinColumn,
+} from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Order } from "../order/order.entity";
-import { Perfume } from "../perfume/perfume.entity";
+import { Order } from '../order/order.entity';
+import { Perfume } from '../perfume/perfume.entity';
 
-@Entity("orderProduct")
+@Entity('orderProduct')
 export class OrderProduct {
-    @PrimaryColumn({type: 'uuid'})
-    id: string;
+  @PrimaryColumn({ type: 'uuid' })
+  id: string;
 
-    @Column()
-    quantity: number;
+  @Column()
+  quantity: number;
 
-    @Column({type: 'decimal', precision: 10, scale: 2})
-    unitPrice: number;
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  unitPrice: number;
 
-    @Column({type: 'decimal', precision: 10, scale: 2})
-    totalPrice: number;
-   
-    @Column()
-    orderId: string;
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  totalPrice: number;
 
-    @ManyToOne(() => Order, (order) => order.orderProducts, {
-        onDelete: 'CASCADE'
-    })
-    order: Order;
+  @Column()
+  orderId: string;
 
-    @Column()
-    perfumeId: string;
+  @ManyToOne(() => Order, (order) => order.orderProducts, {
+    onDelete: 'CASCADE',
+  })
+  order: Order;
 
-    @ManyToOne(() => Perfume, (perfume) => perfume.orderProducts)
-    @JoinColumn({ name: 'perfumeId' })
-    perfume: Perfume;
+  @Column()
+  perfumeId: string;
 
-    @BeforeInsert()
-    async generateId() {
-        this.id = uuidv4();
-    }
+  @ManyToOne(() => Perfume, (perfume) => perfume.orderProducts)
+  @JoinColumn({ name: 'perfumeId' })
+  perfume: Perfume;
+
+  @BeforeInsert()
+  async generateId() {
+    this.id = uuidv4();
+  }
 }

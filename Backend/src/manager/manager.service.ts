@@ -1,35 +1,54 @@
-import { Get, Injectable, Param, Res } from '@nestjs/common';
-import { CreateManagerDto } from './manager.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Perfume } from '../perfume/perfume.entity';
+import { UpdatePerfumeDto } from '../perfume/dto/update-perfume.dto';
 
 @Injectable()
 export class ManagerService {
-  private createdManager: CreateManagerDto | null = null;
+  constructor(
+    @InjectRepository(Perfume)
+    private perfumeRepository: Repository<Perfume>,
+  ) {}
 
-  getManager(): string {
-    return 'Manager service found successfully.';
+  // Get all perfumes
+  async getAllPerfumes(): Promise<Perfume[]> {
+    return this.perfumeRepository.find();
   }
 
-  getManagerById(id: number): string {
-    return 'Get manager by ID: ' + id;
+  // Get perfume by ID
+  async getPerfumeById(id: string): Promise<Perfume> {
+    const perfume = await this.perfumeRepository.findOne({ where: { id } });
+    if (!perfume) {
+      throw new NotFoundException(`Perfume with ID ${id} not found`);
+    }
+    return perfume;
   }
 
-  createManager(data: CreateManagerDto): string {
-    this.createdManager = data;
-    const { id, name, email, password, gender, phone } = data;
-    return `Manager created:
-      ID: ${id}
-      Name: ${name}
-      Email: ${email}
-      Password: ${password}
-      Gender: ${gender}
-      Phone: ${phone}`;
+  // Update perfume (manager can only update price, stock, discount)
+  async updatePerfume(
+    id: string,
+    updatePerfumeDto: UpdatePerfumeDto,
+  ): Promise<Perfume> {
+    // Restrict manager to only update certain fields
+    const allowedFields = ['price', 'stock', 'discount'];
+    const filteredUpdateData = {};
+
+    Object.keys(updatePerfumeDto).forEach((key) => {
+      if (allowedFields.includes(key)) {
+        filteredUpdateData[key] = updatePerfumeDto[key];
+      }
+    });
+
+    if (Object.keys(filteredUpdateData).length === 0) {
+      throw new Error(
+        'No valid fields to update. Managers can only update price, stock, and discount.',
+      );
+    }
+
+    const perfume = await this.getPerfumeById(id);
+    Object.assign(perfume, filteredUpdateData);
+
+    return this.perfumeRepository.save(perfume);
   }
-
-
-  @Get('/getimage/:name')
-  getImages(@Param('name') name, @Res() res) {
-    res.sendFile(name, { root: './uploads' })
-  }
-
-
 }

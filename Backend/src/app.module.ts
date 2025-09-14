@@ -27,7 +27,7 @@ import { AppController } from './app.controller';
       password: 'admin',
       database: 'zafra',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false, // Temporarily disabled
       logging: true,
     }),
     ManagerModule,

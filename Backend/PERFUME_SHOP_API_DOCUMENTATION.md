@@ -4,7 +4,7 @@
 
 ## 🔐 Authentication
 
-### Login
+### Customer Login
 ```http
 POST /auth/login
 Content-Type: application/json
@@ -27,7 +27,7 @@ Content-Type: application/json
 }
 ```
 
-### Signup
+### Customer Signup
 ```http
 POST /auth/signup
 Content-Type: application/json
@@ -41,11 +41,61 @@ Content-Type: application/json
 }
 ```
 
-### Get Profile
+### Customer Profile
 ```http
 GET /auth/profile
 Authorization: Bearer <token>
 ```
+
+---
+
+## 👨‍💼 Admin/Manager Authentication
+
+### Admin/Manager Login
+```http
+POST /admin/auth/login
+Content-Type: application/json
+
+{
+  "email": "tanzil@email.com",
+  "password": "admin123"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "email": "tanzil@email.com",
+    "name": "Tanzil Rayhan",
+    "role": "admin"
+  }
+}
+```
+
+### Admin/Manager Register
+```http
+POST /admin/auth/register
+Content-Type: application/json
+
+{
+  "name": "New Admin",
+  "email": "newadmin@email.com",
+  "password": "password123",
+  "role": "admin"
+}
+```
+
+### Test Credentials
+**Admin:**
+- Email: `tanzil@email.com`
+- Password: `admin123` (after running reset script)
+
+**Manager:**
+- Email: `rimon@email.com` 
+- Password: `manager123` (after running reset script)
 
 ---
 

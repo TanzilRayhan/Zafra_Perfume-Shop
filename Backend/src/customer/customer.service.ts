@@ -318,9 +318,15 @@ export class CustomerService {
             );
         }
     }
-    async deleteCart(cartId: string): Promise<any> { 
-        const result=await this.cartService.deleteCart(cartId);
-        return result;
+    async deleteCart(cartId: string): Promise<{deletedCart: any, customerId: string}> { 
+        // First get the cart to extract customer ID
+        const cart = await this.cartService.getCartById(cartId);
+        const customerId = cart.customerId;
+        
+        // Then delete the cart
+        const result = await this.cartService.deleteCart(cartId);
+        
+        return { deletedCart: result, customerId };
     }
     async updateCustomer(customerId: string, updateData: { fullName?: string, phone?: number, email?: string, address?: string }): Promise<Customer> {
         console.log("Customer ID:", customerId);

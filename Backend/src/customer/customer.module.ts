@@ -8,10 +8,11 @@ import { CartModule } from "src/cart/cart.module";
 import { OrderModule } from "src/order/order.module";
 import { PerfumeModule } from "src/perfume/perfume.module";
 import { MailerModule } from "@nestjs-modules/mailer";
+import { PusherModule } from "src/pusher/pusher.module";
 @Module({
     controllers: [CustomerController],
     providers: [CustomerService],
-    imports: [TypeOrmModule.forFeature([Customer, Cart]), forwardRef(() => CartModule), forwardRef(() => OrderModule), PerfumeModule,
+    imports: [TypeOrmModule.forFeature([Customer, Cart]), forwardRef(() => CartModule), forwardRef(() => OrderModule), PerfumeModule, PusherModule,
         MailerModule.forRoot({
         transport: {
             host: 'smtp.gmail.com',

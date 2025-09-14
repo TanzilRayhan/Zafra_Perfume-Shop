@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ManagerModule } from './manager/manager.module';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
+import {PusherModule} from './pusher/pusher.module';
 
 @Module({
   imports: [
@@ -37,7 +38,8 @@ import { AppController } from './app.controller';
     CartProductModule,
     OrderModule,
     OrderProductModule,
-    AuthModule
+    AuthModule,
+    PusherModule
   ],
   controllers: [AppController],
   providers: [AppService]

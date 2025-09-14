@@ -8,10 +8,11 @@ import { Customer } from './customer.entity';
 import { Cart } from 'src/cart/cart.entity';
 import { CartDto } from 'src/cart/dto/cart.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { PusherService } from 'src/pusher/pusher.service';
 
 @Controller('customer')
 export class CustomerController {
-    constructor(private readonly customerService: CustomerService) { }
+    constructor(private readonly customerService: CustomerService, private readonly pusherService: PusherService) { }
 
     @Post('create')
     async createCustomer(@Body() customer: CustomerDTO): Promise<Customer> {
@@ -36,20 +37,87 @@ export class CustomerController {
     @Post('add-to-cart')
     @UseGuards(AuthGuard)
     async addToCart(@Body() cart: CartDto): Promise<Cart> {
-        return this.customerService.addToCart(cart);
+        const result = await this.customerService.addToCart(cart);
+        
+        // Get updated cart count for the customer
+        const cartDetails = await this.customerService.getAllcartsByCustomerId(cart.customerId);
+        
+        await this.pusherService.trigger('cart', 'cart-updated', {
+            message: 'New item added',
+            item: cart,
+            cartCount: cartDetails.cartQuantity,
+            cartTotal: cartDetails.cartTotal,
+            customerId: cart.customerId
+        });
+        
+        return result;
     }
    
     @Post('get-all-carts')
     @UseGuards(AuthGuard)
     async getAllcartsByCustomerId(@Body() data: {customerId: string}): Promise<any> {
         console.log("customerId", data.customerId);
-        return this.customerService.getAllcartsByCustomerId(data.customerId);
+        try {
+            const result = await this.customerService.getAllcartsByCustomerId(data.customerId);
+            console.log("getAllcartsByCustomerId result", result);
+            return {
+                status: 200,
+                data: {
+                    message: 'Customer carts retrieved successfully',
+                    cartDetails: result
+                }
+            };
+        } catch (error) {
+            if (error.status === 404) {
+                return {
+                    status: 200,
+                    data: {
+                        message: 'No carts found',
+                        cartDetails: []
+                    }
+                };
+            }
+            throw error;
+        }
     }
 
     @Delete('delete-cart')
-    @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard)   
     async deleteCustomerCart(@Body() data: {cartId: string}): Promise<any> {
-        return this.customerService.deleteCart(data.cartId);
+        console.log("cartId", data.cartId);
+        try {
+        const result = await this.customerService.deleteCart(data.cartId);
+        
+        // Get updated cart count for the customer after deletion
+        const cartDetails = await this.customerService.getAllcartsByCustomerId(result.customerId);
+        
+        await this.pusherService.trigger('cart', 'cart-updated', {
+            message: 'Item removed from cart',
+            cartCount: cartDetails.cartQuantity,
+            cartTotal: cartDetails.cartTotal,
+            customerId: result.customerId,
+            action: 'delete'
+        });
+        
+        return {
+            status: 200,
+            data: {
+                message: 'Cart deleted successfully',
+                    cartDetails: cartDetails
+                }   
+            };
+        } catch (error) {
+            if (error.status === 404) {
+                return {
+                    status: 200,
+                    data: {
+                        message: 'Deleted cart successfully',
+                        cartDetails: []
+                    }
+                };
+            }
+            throw error;
+        }
     }
 
     @Post('create-order')
@@ -90,12 +158,5 @@ export class CustomerController {
    async getAllOrders(@Body() data: {customerId: string}): Promise<any> {
     console.log("customerId", data.customerId);
     return this.customerService.getAllOrders(data.customerId);
-   }
-   @Delete('delete-cart')
-   @UseGuards(AuthGuard)
-   async deleteCart(@Body() data: {cartId: string}): Promise<any> {
-    console.log("data", data);
-    console.log("cartId", data.cartId);
-    return this.customerService.deleteCart(data.cartId);
    }
 }
